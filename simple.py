@@ -1,9 +1,15 @@
+import sys
 import face_recognition
 import cv2
 import numpy as np
 from playsound import playsound
 
-video_capture = cv2.VideoCapture(1)
+camId=1
+
+if (len(sys.argv)==2):
+    camId=int(sys.argv[1])
+
+video_capture = cv2.VideoCapture(camId)
 
 
 
