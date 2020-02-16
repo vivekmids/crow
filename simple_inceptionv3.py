@@ -9,6 +9,11 @@ from tensorflow.python.keras.applications.inception_v3 import InceptionV3
 from tensorflow.python.keras.applications.inception_v3 import preprocess_input as InceptionV3_preprocess_input
 
 
+# Get the InceptionV3 model trained on imagenet data
+inception_v3 = InceptionV3(weights='imagenet')
+inception_v3_new = Model(inception_v3.input, inception_v3.layers[-3].output)
+
+
 video_capture = cv2.VideoCapture(1)
 
 
@@ -39,10 +44,6 @@ while True:
 
 
         #################### CC add ####################
-
-        # Get the InceptionV3 model trained on imagenet data
-        inception_v3 = InceptionV3(weights='imagenet')
-        inception_v3_new = Model(inception_v3.input, inception_v3.layers[-3].output)
 
         # Preprocess captured image
         img = tf.image.resize(rgb_small_frame, (299, 299))
