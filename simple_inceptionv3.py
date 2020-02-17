@@ -47,12 +47,15 @@ while True:
 
         # Preprocess captured image
         img = tf.image.resize(rgb_small_frame, (299, 299))
+        print(img.shape)
+        img = tf.reshape(img, [-1, 299,299,3])
+        print(img.shape)
         img = InceptionV3_preprocess_input(img)
 
         # Print last layer of the inception v3 model
         batch_features = inception_v3_new(img)
         batch_features = tf.reshape(batch_features,(tf.shape(batch_features)[0], -1, tf.shape(batch_features)[3]))
-        print(batch_features.numpy())
+        print(batch_features)
 
         ################# End of CC Add #################
 
