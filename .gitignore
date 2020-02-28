@@ -1,2 +1,7 @@
 .ipynb_checkpoints/
 data/
+__pycache__
+
+# development files
+.vscode
+venv
