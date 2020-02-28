@@ -19,7 +19,7 @@ def infer():
     # do all the inferences
 
     return jsonify({
-        'found_something': False,  # was an inference made and successful,
+        'found_something': True,  # was an inference made and successful,
         'detected_animals': ['racoon']  # what did we find
     })
 

@@ -48,19 +48,14 @@ def update_status():
     })
 
     if resp.status_code != 200:
-        return jsonify({
-            'cam_id': cam_id,
-            'failed': True,
-            'status': resp.status_code,
-            'message': resp.text
-        })
-        # TODO: What else do we do when we have a failure though?
+        # TODO: What do we do when we have a failure though?
+        pass
     else:
         inference_response = resp.json()
 
     if inference_response['found_something']:
         # Step 3 - deploy a deterrent maybe
-        resp = request.post(DETERRENT_SERVICE, json={
+        resp = requests.post(DETERRENT_SERVICE, json={
             'detected_animals': inference_response['detected_animals'],
         })
 
