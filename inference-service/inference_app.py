@@ -2,12 +2,15 @@ import pickle
 
 from flask import Flask, jsonify, request
 
+from model import infer, load_model
+
 
 app = Flask(__name__)
+app.model = load_model()
 
 
 @app.route('/', methods=['POST'])
-def infer():
+def perform_inference():
     """Takes input in the form of
     {
         "image": '..'  # pickle.dumps(image_ndarray).decode('latin-1')
@@ -16,11 +19,11 @@ def infer():
     data = request.get_json(force=True)
     image = pickle.loads(data['image'].encode('latin-1'))
 
-    # do all the inferences
+    found_something, detected_animals = infer(app.model, image)
 
     return jsonify({
-        'found_something': True,  # was an inference made and successful,
-        'detected_animals': ['racoon']  # what did we find
+        'found_something': found_something,
+        'detected_animals': detected_animals
     })
 
 
