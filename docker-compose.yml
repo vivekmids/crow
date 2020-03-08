@@ -1,0 +1,15 @@
+version: '3'
+services:
+  web:
+    build: web/
+    ports:
+      - "8000:8000"
+
+  edge:
+    build: edge/
+    ports:
+      - "5000:5000"
+    volumes:
+      - "./edge/requirements.txt:/requirements.txt"
+    devices:
+      - /dev/video0:/dev/video0

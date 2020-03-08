@@ -1,6 +1,4 @@
 flask==1.1.1
 opencv_python
-face_recognition
 playsound
-vext
-vext.gi
+requests
