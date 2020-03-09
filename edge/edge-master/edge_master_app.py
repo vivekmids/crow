@@ -1,4 +1,4 @@
-import sys
+import os
 
 from flask import Flask, jsonify, request
 import requests
@@ -6,16 +6,13 @@ import requests
 from starting_scripts import CAM_PROC_STATUSES, start_camera_processes, start_inference_service, start_deterrent_service
 
 
-INFERENCE_SERVICE = 'http://localhost:5050'
-DETERRENT_SERVICE = 'http://localhost:5100'
+def env_or_default(name, default):
+    return os.env[name] if name in os.env else default
 
-# update any global constants with args
-if len(sys.argv) == 3:
-    INFERENCE_SERVICE = sys.argv[1]
-    DETERRENT_SERVICE = sys.argv[2]
-elif len(sys.argv) > 1:
-    raise Exception("Either start with no args, or give INFERENCE_SERIVCE and DETTERNT_SERVICE urls as args")
 
+INFERENCE_SERVICE = env_or_default('INFERENCE_SERVICE', 'http://localhost:5050')
+DETERRENT_SERVICE = env_or_default('DETERRENT_SERVICE', 'http://localhost:5100')
+CLOUD_ENDPOINT = env_or_default('CLOUD_ENDPOINT', None)
 
 # service to keep track of these bad bois
 app = Flask(__name__)
