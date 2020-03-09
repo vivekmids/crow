@@ -1,4 +1,5 @@
 import os
+import uuid
 
 from flask import Flask, jsonify, request
 import requests
@@ -13,6 +14,7 @@ def env_or_default(name, default):
 INFERENCE_SERVICE = env_or_default('INFERENCE_SERVICE', 'http://localhost:5050')
 DETERRENT_SERVICE = env_or_default('DETERRENT_SERVICE', 'http://localhost:5100')
 CLOUD_ENDPOINT = env_or_default('CLOUD_ENDPOINT', None)
+DEVICE_ID = env_or_default('DEVICE_ID', "edge-device-" + str(uuid.uuid4())[:5])
 
 # service to keep track of these bad bois
 app = Flask(__name__)
@@ -63,9 +65,19 @@ def update_status():
             deterrent_response = resp.json()
 
         # TODO: post data to cloud
+        if CLOUD_ENDPOINT:
+            resp = requests.post(CLOUD_ENDPOINT, json={
+                'updated': True,
+                'device_id': DEVICE_ID,
+                'cam_id': cam_id,
+                'inference_response': inference_response,
+                'deterrent_response': deterrent_response
+            })
 
     return jsonify({
         'updated': True,
+        'device_id': DEVICE_ID,
+        'cam_id': cam_id,
         'inference_response': inference_response,
         'deterrent_response': deterrent_response
     })
