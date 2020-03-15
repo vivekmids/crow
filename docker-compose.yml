@@ -4,6 +4,8 @@ services:
     build: web-backend/
     ports:
       - "8000:8000"
+    volumes:
+      - "./web-backend/requirements.txt:/requirements.txt"
 
   edge:
     build: edge/

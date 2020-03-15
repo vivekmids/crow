@@ -1,3 +1,5 @@
 FROM python:3.8-slim
 
-CMD [ "echo", "WEB STARTS HERE" ]
+COPY . .
+
+CMD [ "sh", "-c",  "pip install -r requirements.txt && python app.py" ]
