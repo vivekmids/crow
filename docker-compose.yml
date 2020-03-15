@@ -5,7 +5,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - "./web-backend/requirements.txt:/requirements.txt"
+      - "./web-backend:/app"
 
   edge:
     build: edge/
@@ -14,6 +14,6 @@ services:
       - "5050:5050"  # inference-service
       - "5100:5100"  # deterrent-service
     volumes:
-      - "./edge/requirements.txt:/requirements.txt"
- #   devices:
- #     - /dev/video0:/dev/video0
+      - "./edge:/app"
+    devices:
+     - /dev/video0:/dev/video0
