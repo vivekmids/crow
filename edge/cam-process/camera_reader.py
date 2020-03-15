@@ -34,8 +34,9 @@ def main():
                     })
                     logging.info("Status: %d, response: %s", resp.status_code, resp.text.strip())
 
-                except:
+                except Exception as e:
                     logging.error("Camera %d failed to publish image to Edge Master Service", cam_id)
+                    raise e
 
                 cv2.imshow("Crow", frame)
             else:
