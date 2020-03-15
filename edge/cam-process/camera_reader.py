@@ -27,7 +27,11 @@ def main():
         while True:
             ret, frame = cap.read()
             if ret:
+		frame = cv2.resize(frame, (299,299))
+		frame = frame.reshape(1,299,299,3)	
                 try:
+		    frame = cv2.resize(frame, (299,299))
+		    frame = frame.reshape(1,299,299,3)	
                     resp = requests.post(EDGE_MASTER_SERVICE, json={
                     'cam_id': cam_id,
                     'image': pickle.dumps(frame, protocol=pickle.HIGHEST_PROTOCOL).decode('latin-1')
