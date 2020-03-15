@@ -70,6 +70,7 @@ def update_status():
                 'updated': True,
                 'device_id': DEVICE_ID,
                 'cam_id': cam_id,
+                'image': data['image'].encode('latin-1'),
                 'inference_response': inference_response,
                 'deterrent_response': deterrent_response
             })

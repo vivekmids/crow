@@ -1,3 +1,5 @@
+import pickle
+
 from flask import Flask, request, jsonify
 
 
@@ -16,6 +18,7 @@ def save_image(payload):
                 'updated': True,
                 'device_id': device_id,
                 'cam_id': cam_id,
+                'image': numpy array of image RGB values,
                 'inference_response': inference_response,
                 'deterrent_response': deterrent_response
             }
@@ -33,6 +36,7 @@ def handle_route():
         return jsonify(get_images())
     elif request.method == 'POST':
         payload = request.get_json(force=True)
+        payload['image'] = pickle.loads(payload['image'].encode('latin-1'))
         return jsonify(save_image(payload))
 
 
