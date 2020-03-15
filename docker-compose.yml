@@ -10,7 +10,9 @@ services:
   edge:
     build: edge/
     ports:
-      - "5000:5000"
+      - "5000:5000"  # edge-master
+      - "5050:5050"  # inference-service
+      - "5100:5100"  # deterrent-service
     volumes:
       - "./edge/requirements.txt:/requirements.txt"
     devices:
