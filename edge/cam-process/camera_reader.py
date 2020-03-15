@@ -17,12 +17,12 @@ def main():
     except:
         cam_id = 0
         logging.warning('No camera specified. Defaulting to ' + str(cam_id))
-    
+
     cap = cv2.VideoCapture(cam_id)
 # if capture failed to open, try again
     if not cap.isOpened():
         cap.open(cam_id)
-        
+
     if cap.isOpened():
         while True:
             ret, frame = cap.read()
@@ -30,7 +30,7 @@ def main():
                 try:
                     resp = requests.post(EDGE_MASTER_SERVICE, json={
                     'cam_id': cam_id,
-                    'image': pickle.dumps(img, protocol=pickle.HIGHEST_PROTOCOL).decode('latin-1')
+                    'image': pickle.dumps(frame, protocol=pickle.HIGHEST_PROTOCOL).decode('latin-1')
                     })
                     logging.info("Status: %d, response: %s", resp.status_code, resp.text.strip())
 
