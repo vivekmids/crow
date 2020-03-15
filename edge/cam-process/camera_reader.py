@@ -27,15 +27,20 @@ def main():
         while True:
             ret, frame = cap.read()
             if ret:
+		frame = cv2.resize(frame, (299,299))
+		frame = frame.reshape(1,299,299,3)	
                 try:
+		    frame = cv2.resize(frame, (299,299))
+		    frame = frame.reshape(1,299,299,3)	
                     resp = requests.post(EDGE_MASTER_SERVICE, json={
                     'cam_id': cam_id,
                     'image': pickle.dumps(frame, protocol=pickle.HIGHEST_PROTOCOL).decode('latin-1')
                     })
                     logging.info("Status: %d, response: %s", resp.status_code, resp.text.strip())
 
-                except:
+                except Exception as e:
                     logging.error("Camera %d failed to publish image to Edge Master Service", cam_id)
+                    raise e
 
                 cv2.imshow("Crow", frame)
             else:
