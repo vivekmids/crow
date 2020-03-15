@@ -3,4 +3,4 @@ opencv_python
 playsound
 requests
 numpy
-tensorflow.python.keras.models
+tensorflow

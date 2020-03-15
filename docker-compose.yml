@@ -15,5 +15,5 @@ services:
       - "5100:5100"  # deterrent-service
     volumes:
       - "./edge/requirements.txt:/requirements.txt"
-    devices:
-      - /dev/video0:/dev/video0
+ #   devices:
+ #     - /dev/video0:/dev/video0
