@@ -1,5 +1,8 @@
 .ipynb_checkpoints/
 data/
+weights/baseline/
+weights/model_1/
+
 __pycache__
 
 # development files
