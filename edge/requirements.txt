@@ -2,3 +2,5 @@ flask==1.1.1
 opencv_python
 playsound
 requests
+numpy
+tensorflow.python.keras.models

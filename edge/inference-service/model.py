@@ -1,5 +1,4 @@
 
-
 class StupidModel(object):
     def __call__(self, image):
         return "racoon"
@@ -8,7 +7,8 @@ class StupidModel(object):
 def load_model():
     """Here lies logic to load the model"""
     # TODO: load an actual model
-    return StupidModel()
+    model = load_model('weights/combined/combined_model.h5')
+    return model
 
 
 def infer(model, image):
@@ -21,6 +21,15 @@ def infer(model, image):
 
     Returns: bool, list(string)
         - a boolean to signal we found something
-        - a list of found animals
+        - name of identified animals
     """
-    return True, [model.__call__(image)]
+    
+    classes = ['skunk','fox','rodent','dog','squirrel','cat','rabbit','bird','cow','bobcat','deer','raccoon','coyote','opossum']
+    classes_dict_lookup = dict(zip(range(15), classes+'other'))
+
+    predicted_id = model.predict(image)
+    predicted_name = classes_dict_lookup[predicted_id.argmax()]
+    if predicted_name in classes:
+        return True, predicted_name
+    else:
+        return False, None
