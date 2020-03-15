@@ -8,7 +8,7 @@ from starting_scripts import CAM_PROC_STATUSES, start_camera_processes, start_in
 
 
 def env_or_default(name, default):
-    return os.env[name] if name in os.env else default
+    return os.environ[name] if name in os.environ else default
 
 
 INFERENCE_SERVICE = env_or_default('INFERENCE_SERVICE', 'http://localhost:5050')
