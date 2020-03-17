@@ -12,6 +12,7 @@ logging.getLogger().setLevel(logging.INFO)
 EDGE_MASTER_SERVICE = 'http://localhost:5000/process-image'
 
 def main():
+    DEBUG = True
     try:
         cam_id = int(sys.argv[1])
     except:
@@ -40,13 +41,12 @@ def main():
                     logging.error("Camera %d failed to publish image to Edge Master Service", cam_id)
                     raise e
 
-                cv2.imshow("Crow", rawframe)
+                if DEBUG:
+                    cv2.imshow("Crow", rawframe)
             else:
                 print ("Error reading capture device")
                 break
-            k = cv2.waitKey(10) & 0xFF
-            if k == 27:
-                break
+            cv2.waitKey(10)
     else:
         logging.error("Failed to open capture camera: %d", cam_id)
 
