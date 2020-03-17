@@ -26,7 +26,7 @@ def infer(model, image):
     """
     
     classes = ['skunk','fox','rodent','dog','squirrel','cat','rabbit','bird','cow','bobcat','deer','raccoon','coyote','opossum']
-    classes_dict_lookup = dict(zip(range(15), classes+'other'))
+    classes_dict_lookup = dict(zip(range(15), classes+['other']))
     
     # run inference
     predicted_id = model.predict(image)
