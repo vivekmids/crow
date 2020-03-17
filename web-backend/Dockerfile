@@ -1,4 +1,9 @@
-FROM python:3.8-slim
+FROM python:3.7-buster
+
+# install system requirements for python libs
+RUN apt-get update && \
+    apt-get install -y python3.7-dev libpq-dev && \
+    apt-get clean
 
 RUN mkdir /app
 
