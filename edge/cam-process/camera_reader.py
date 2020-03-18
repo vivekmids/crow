@@ -3,6 +3,7 @@ import pickle
 import time
 import logging
 import cv2
+import random
 
 import requests
 
@@ -11,8 +12,9 @@ logging.getLogger().setLevel(logging.INFO)
 
 EDGE_MASTER_SERVICE = 'http://localhost:5000/process-image'
 
+
 def main():
-    DEBUG = True
+    DEBUG = False  # True
     try:
         cam_id = int(sys.argv[1])
     except:
@@ -29,11 +31,11 @@ def main():
             ret, rawframe = cap.read()
             if ret:
                 try:
-                    frame = cv2.resize(rawframe, (299,299))
-                    frame = frame.reshape(1,299,299,3)  
+                    frame = cv2.resize(rawframe, (299, 299))
+                    frame = frame.reshape(1, 299, 299, 3)
                     resp = requests.post(EDGE_MASTER_SERVICE, json={
-                    'cam_id': cam_id,
-                    'image': pickle.dumps(frame, protocol=pickle.HIGHEST_PROTOCOL).decode('latin-1')
+                        'cam_id': cam_id,
+                        'image': pickle.dumps(frame, protocol=pickle.HIGHEST_PROTOCOL).decode('latin-1')
                     })
                     logging.info("Status: %d, response: %s", resp.status_code, resp.text.strip())
 
@@ -44,11 +46,13 @@ def main():
                 if DEBUG:
                     cv2.imshow("Crow", rawframe)
             else:
-                print ("Error reading capture device")
+                print("Error reading capture device")
                 break
             cv2.waitKey(10)
     else:
         logging.error("Failed to open capture camera: %d", cam_id)
 
+
 if __name__ == '__main__':
+    time.sleep(5 + int(5 * random.random()))  # warm up time for other services
     main()
