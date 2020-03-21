@@ -1,9 +1,10 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, current_app
 
-from deterrent_manager import choose_deterrent, deploy_deterrent
+from deterrent_manager import DeterrentManager
 
 
 app = Flask(__name__)
+app.deterrent_manager = DeterrentManager()
 
 
 @app.route('/', methods=['POST'])
@@ -17,9 +18,7 @@ def deter():
     detected_animals = data['detected_animals']
 
     # deploy all the deterrents
-    deterrent = choose_deterrent(detected_animals)
-    if deterrent:
-        deploy_deterrent(deterrent)
+    deterrent = current_app.deterrent_manager.deploy_deterrent(detected_animals)
 
     return jsonify({
         'deployed_deterrent': deterrent

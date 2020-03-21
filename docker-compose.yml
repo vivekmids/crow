@@ -7,6 +7,11 @@ services:
     volumes:
       - "./web-backend:/app"
 
+  web-frontend:
+    build: web-frontend/
+    ports:
+      - "80:80"
+
   edge:
     build: edge/
     ports:
