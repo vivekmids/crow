@@ -11,7 +11,7 @@ def start_camera_processes():
     # detect which cameras are available for use. Unfortunately cv2 doesn't have any
     # good interface to do so, so we'll have to "open" up to 10 cameras, and see if
     # if they were successfully opened
-    for i in range(11):
+    for i in range(4):
         capture = cv2.VideoCapture(i)
         if capture.isOpened():
             CAM_PROC_STATUSES[i] = {'proc': None, 'last_status': 'Not Started'}
