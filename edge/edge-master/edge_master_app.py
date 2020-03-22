@@ -1,5 +1,6 @@
 import os
 import uuid
+import time
 
 from flask import Flask, jsonify, request
 import requests
@@ -87,6 +88,7 @@ def update_status():
 def main():
     # kick off all supporting services first
     start_inference_service()
+    time.sleep(10)
     start_deterrent_service()
 
     # kick off all camera processes
