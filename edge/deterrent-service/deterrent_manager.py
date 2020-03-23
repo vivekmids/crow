@@ -1,11 +1,13 @@
 import logging
 import numpy as np
 import os
+import RPi.GPIO as gpio
+import time
 
 
 def _is_day():
-    """TODO implement code for day vs night"""
-    return True
+    localtime = time.localtime()
+    return localtime<20 and localtime>6
 
 
 class DeterrentManager(object):
@@ -34,6 +36,9 @@ class DeterrentManager(object):
                 except Exception as e:
                     logging.error("Sound files for %s in folder %s not found", pest, predator)
                     raise e
+                    
+        gpio.setmode(gpio.BOARD)
+        gpio.setup(11, gpio.OUT)
 
     def deploy_deterrent(self, detected_animal):
         """Here we deploy a deterrent"""
@@ -62,4 +67,9 @@ class DeterrentManager(object):
             return None
 
     def flash_light(self, detected_animal):
-        pass
+        for i in range(4):
+            gpio.output(11, True)
+            time.sleep(np.random.random()*2+.2)
+            gpio.output(11, False)
+            if i<3:
+                time.sleep(np.random.random()+.2)
