@@ -6,7 +6,7 @@ import time
 
 
 def _is_day():
-    localtime = time.localtime()
+    localtime = time.localtime().tm_hour
     return localtime<20 and localtime>6
 
 
