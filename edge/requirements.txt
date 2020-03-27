@@ -2,3 +2,4 @@ flask==1.1.1
 opencv_python==3.4.6.27
 requests
 numpy
+RPi.GPIO
