@@ -16,6 +16,9 @@ def perform_inference():
     """
     data = request.get_json(force=True)
     image = pickle.loads(data['image'].encode('latin-1')).astype(np.float32)
+    
+    #for testing purpose
+    pickle.dump(image, open("img_for_inference", "wb"))
 
     found_something, detected_animals = infer(app.model, image)
 
