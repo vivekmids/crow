@@ -5,6 +5,8 @@ import psycopg2
 import json
 import numpy as np
 import os
+from datetime import datetime
+
 from flask import Flask, request, jsonify
 from PIL import Image
 import random
@@ -13,10 +15,12 @@ import string
 app = Flask(__name__)
 
 endpoint = 'https://s3.us.cloud-object-storage.appdomain.cloud'
-s3 = boto3.resource('s3',endpoint_url=endpoint)
+s3 = boto3.resource('s3', endpoint_url=endpoint)
+
 
 def rand_str_generator(size, chars=string.ascii_letters):
     return ''.join(random.choice(chars) for _ in range(size))
+
 
 def get_images():
     """Here we should return a list of images the customer has already seen
@@ -25,6 +29,7 @@ def get_images():
     stat_summary = json.dumps(stat_summary, indent=4, sort_keys=True, default=str)
     print(stat_summary)
     return stat_summary
+
 
 def get_image_info(one=False):
     conn = psycopg2.connect(host="169.63.11.147", database="postgres", user="postgres", password="scarecrow",
@@ -38,8 +43,7 @@ def get_image_info(one=False):
     return (r[0] if r else None) if one else r
 
 
-def save_image(image_array):
-
+def save_image(image_array, device_id, cam_id, detected_animals, time_stamp):
     bucket = 'w210-bucket'
     object_name = None
     #convert numpy array to PNG/jpg
@@ -48,7 +52,8 @@ def save_image(image_array):
     img = image_array.reshape(299, 299,3)
     img = np.array(img)
     img = Image.fromarray(img)
-    file_name ='image_' + rand_str_generator(3)+'.jpeg'
+    file_name = f'image-{device_id}-{cam_id}-{detected_animals}-{time_stamp}-{rand_str_generator(3)}.jpeg'
+
     img.save(file_name)
     #cwd = os.getcwd()
     #file = cwd +'/'+file_name
@@ -65,10 +70,9 @@ def save_image(image_array):
         response = s3_client.upload_file(file_name, bucket,object_name)
     except Exception as e:
         logging.error(e)
-        return False
-    return True
+        return None
 
-    #return {}
+    return file_name
 
 
 def insert_to_db(device_id,cam_id,detterent_type,date_time,soundfile_name,key,detected_animals,updated,found_something,bucket='w210-bucket'):
@@ -86,8 +90,6 @@ def insert_to_db(device_id,cam_id,detterent_type,date_time,soundfile_name,key,de
         Any useful metadata that will be useful for the edge device
         We will simply be logging this data so it doesn't really matter
     """
-
-
    for bucket in s3.buckets.all():
     for key in bucket.objects.all():
         print(key.key)
@@ -127,19 +129,30 @@ def handle_route():
         print("here")
         payload['image'] = pickle.loads(payload['image'].encode('latin-1'))
         print("here1")
+
+        time_stamp = datetime.now()
+        detected_animals = payload['inference_response']['detected_animals']
+        cam_id = payload['cam_id']
+        device_id = payload['device_id']
+
+        image_key = save_image(payload['image'], device_id, cam_id, detected_animals, time_stamp)
+        print("saved image")
+
+        db_row_id = insert_to_db(
+            device_id,
+            cam_id,
+            payload['deterrent_response']['deployed_deterrent']['type'],
+            time_stamp,
+            payload['deterrent_response']['deployed_deterrent'].get('played_sound', None),  # default None
+            image_key,
+            detected_animals,
+            payload['updated'],
+            payload['inference_response']['found_something']
+        )
+
         return jsonify({
-            "image": save_image(payload['image']),
-            "db_row_id": insert_to_db(
-                payload['device_id'],
-                payload['cam_id'],
-                payload['detterent_type'],
-                payload['date_time'],
-                payload['soundfile_name'],
-                payload['key'],
-                payload['detected_animals'],
-                payload['updated'],
-                payload['found_something']
-            )
+            "image": image_key,
+            "db_row_id": db_row_id
         })
 
 
