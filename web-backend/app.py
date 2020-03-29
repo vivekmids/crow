@@ -39,7 +39,8 @@ def save_image(image_array):
     bucket = 'w210-bucket'
     object_name = None
     #convert numpy array to PNG/jpg
-    print(image_array.shape)
+    #print(image_array.shape)
+    logging.error(image_array.shape)
     img = Image.fromarray(image_array)
     file_name ='image.jpeg'
     img.save(file_name)
