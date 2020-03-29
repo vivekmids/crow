@@ -75,8 +75,8 @@ def save_image(image_array, device_id, cam_id, detected_animals, time_stamp):
     return file_name
 
 
-def insert_to_db(device_id,cam_id,detterent_type,date_time,soundfile_name,key,detected_animals,updated,found_something,bucket='w210-bucket'):
-   """Here we save the images. The input data will be:
+def insert_to_db(device_id, cam_id, deterrent_type, date_time, soundfile_name, key, detected_animals, updated, found_something, bucket='w210-bucket'):
+    """Here we save the images. The input data will be:
             {
                 'updated': True,
                 'device_id': device_id,
@@ -90,32 +90,33 @@ def insert_to_db(device_id,cam_id,detterent_type,date_time,soundfile_name,key,de
         Any useful metadata that will be useful for the edge device
         We will simply be logging this data so it doesn't really matter
     """
-   for bucket in s3.buckets.all():
-    for key in bucket.objects.all():
-        print(key.key)
-        print(key)
+    try:
+        conn = psycopg2.connect(host="169.63.11.147", database="postgres", user="postgres", password="scarecrow", sslmode="disable")
+        cur = conn.cursor()
 
-   try:
-       conn = psycopg2.connect(host="169.63.11.147",database="postgres",user="postgres",password="scarecrow",sslmode="disable")
-       cur = conn.cursor()
+        postgres_insert_query = """
+        INSERT INTO crow (device_id, cam_id, detterent_type, date_time, soundfile_name, key_name, detected_animals, updated, found_something, bucket_name)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        record_to_insert = (
+            device_id, cam_id, deterrent_type, date_time, soundfile_name, key, detected_animals, updated,
+            found_something, bucket)
+        cur.execute(postgres_insert_query, record_to_insert)
+        conn.commit()
 
-       postgres_insert_query ="""insert into crow(device_id,cam_id,detterent_type,date_time,soundfile_name,key_name,detected_animals,updated,found_something,bucket_name) VALUES (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s)"""
-       record_to_insert = (device_id,cam_id,detterent_type,date_time,soundfile_name,key,detected_animals,updated,found_something,bucket)
-       cur.execute(postgres_insert_query,record_to_insert)
-       conn.commit()
-       count = cur.rowcount
-       print (count, "Record inserted successfully into crow table")
+        count = cur.rowcount
+        logging.info(f"{count} records inserted successfully into crow table")
 
-   except (Exception, psycopg2.Error) as error :
-       if(conn):
-           print("Failed to insert record into mobile table", error)
-
-   finally:
-       #closing database connection.
-       if(conn):
-           cur.close()
-           conn.close()
-           print("PostgreSQL connection is closed")
+    except (Exception, psycopg2.Error) as error:
+        if conn:
+            logging.error("Failed to insert record into mobile table", error)
+            raise error
+    finally:
+        # closing database connection.
+        if conn:
+            cur.close()
+            conn.close()
+            print("PostgreSQL connection is closed")
 
 
 @app.route('/', methods=['GET', 'POST'])
