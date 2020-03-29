@@ -3,7 +3,8 @@ import logging
 import boto3
 import psycopg2
 import json
-
+import numpy as np
+import os
 from flask import Flask, request, jsonify
 from PIL import Image
 
@@ -18,7 +19,7 @@ def get_images():
     """
     stat_summary = get_image_info()
     stat_summary = json.dumps(stat_summary, indent=4, sort_keys=True, default=str)
-
+    print(stat_summary)
     return stat_summary
 
 def get_image_info(one=False):
@@ -29,26 +30,31 @@ def get_image_info(one=False):
     postgres_select_query = """select * from crow"""
     cur.execute(postgres_select_query)
     r = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in cur.fetchall()]
-    cur.conn.close()
+    cur.close()
     return (r[0] if r else None) if one else r
 
 
-def save_image(image):
+def save_image(image_array):
+
     bucket = 'w210-bucket'
     object_name = None
-    #convert numpy array to RGB image and store it as PNG/jpg
-    img = Image.fromarray(image)
-    file_name ='test319'
-    img.save(file_name+'.png')
+    #convert numpy array to PNG/jpg
+    img = Image.fromarray(image_array)
+    file_name ='image.jpeg'
+    img.save(file_name)
+    cwd = os.getcwd()
+    file = cwd +'/'+file_name
+    print('in save_image before calling s3')
 
     # If S3 object_name was not specified, use file_name
     if object_name is None:
-        object_name = file_name
+        object_name = file
 
     # Upload the file
     s3_client = boto3.client('s3',endpoint_url=endpoint)
+    print('s3 client instantiated')
     try:
-        response = s3_client.upload_file(file_name, bucket,object_name)
+        response = s3_client.upload_file(file, bucket,object_name)
     except Exception as e:
         logging.error(e)
         return False
@@ -57,7 +63,7 @@ def save_image(image):
     #return {}
 
 
-def insert_to_db(DEVICE_ID,cam_id,detterent_type,date_time,soundfile_name,key,bucket='w210-bucket'):
+def insert_to_db(DEVICE_ID,cam_id,detterent_type,date_time,soundfile_name,key,detected_animals,updated,found_something,bucket='w210-bucket'):
    """Here we save the images. The input data will be:
             {
                 'updated': True,
@@ -83,8 +89,8 @@ def insert_to_db(DEVICE_ID,cam_id,detterent_type,date_time,soundfile_name,key,bu
        conn = psycopg2.connect(host="169.63.11.147",database="postgres",user="postgres",password="scarecrow",sslmode="disable")
        cur = conn.cursor()
 
-       postgres_insert_query ="""insert into crow(device_id,cam_id,detterent_type,date_time,soundfile_name,key_name,bucket_name) VALUES (%s, %s, %s, %s, %s, %s, %s)"""
-       record_to_insert = (DEVICE_ID,cam_id,detterent_type,date_time,soundfile_name,key,bucket)
+       postgres_insert_query ="""insert into crow(device_id,cam_id,detterent_type,date_time,soundfile_name,key_name,detected_animals,updated,found_something,bucket_name) VALUES (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s)"""
+       record_to_insert = (DEVICE_ID,cam_id,detterent_type,date_time,soundfile_name,key,detected_animals,updated,found_something,bucket)
        cur.execute(postgres_insert_query,record_to_insert)
        conn.commit()
        count = cur.rowcount
@@ -104,16 +110,28 @@ def insert_to_db(DEVICE_ID,cam_id,detterent_type,date_time,soundfile_name,key,bu
 
 @app.route('/', methods=['GET', 'POST'])
 def handle_route():
+    print("inside handle")
     if request.method == 'GET':
         return jsonify(get_images())
     elif request.method == 'POST':
+        print('inside POST')
         payload = request.get_json(force=True)
+        print("here")
         payload['image'] = pickle.loads(payload['image'].encode('latin-1'))
-        return jsonify(save_image(payload['image']))
+        print("here1")
+        return jsonify({
+        "image": save_image(payload['image']),
+        "db_row_id": insert_to_db(payload['DEVICE_ID','cam_id','detterent_type','date_time','soundfile_name','key','detected_animals','updated','found_something','bucket_name'])
+        })
+
+@app.route('/xyz', methods=['GET', 'POST'])
+def test():
+    print("inside test")
+    return jsonify([])
 
 
 def main():
-    app.run('0.0.0.0', 8000)
+    app.run('0.0.0.0', 8000,debug=True)
 
 
 if __name__ == '__main__':

@@ -6,6 +6,10 @@ services:
       - "8000:8000"
     volumes:
       - "./web-backend:/app"
+    environment:
+        - AWS_ACCESS_KEY_ID=p1CsWchkAo9df4s68g7y
+        - AWS_SECRET_ACCESS_KEY=d76yDfnxC0nyjG7jm5j3mHcHZ0KePH8jt7Ant8Y2
+
 
   web-frontend:
     build: web-frontend/
