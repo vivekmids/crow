@@ -3,7 +3,7 @@ import pickle
 import time
 import logging
 import cv2
-import random
+import numpy as np
 
 import requests
 
@@ -11,10 +11,36 @@ import requests
 logging.getLogger().setLevel(logging.INFO)
 
 EDGE_MASTER_SERVICE = 'http://localhost:5000/process-image'
+DEBUG = True
 
+def distMap(frame1, frame2):
+    """outputs distance between two frames"""
+    frame1_32 = np.float32(frame1)
+    frame2_32 = np.float32(frame2)
+    diff32 = frame1_32 - frame2_32
+    norm32 = (np.abs(diff32[:,:,0]) + np.abs(diff32[:,:,1]) + np.abs(diff32[:,:,2]))/765
+    dist = np.uint8(norm32*255)
+    return dist
+
+def motion(frame1, frame2, sdThresh=10):
+    dist = distMap(frame1, frame2)
+
+    mod = cv2.GaussianBlur(dist, (9,9), 0)
+
+    _, thresh = cv2.threshold(mod, 100, 255, 0)
+
+    _, stDev = cv2.meanStdDev(mod)
+
+    if DEBUG:
+        cv2.imshow('dist', mod)
+        cv2.putText(frame2, "Standard Deviation - {}".format(round(stDev[0][0],0)), (70, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 1, cv2.LINE_AA)
+    if stDev > sdThresh:
+        logging.info("Motion detected");
+        return True
+    else:
+        return False
 
 def main():
-    DEBUG = False  # True
     try:
         cam_id = int(sys.argv[1])
     except:
@@ -25,13 +51,16 @@ def main():
 # if capture failed to open, try again
     if not cap.isOpened():
         cap.open(cam_id)
+    
+
 
     if cap.isOpened():
+        _, frame1 = cap.read()
+        _, frame2 = cap.read()
         while True:
-            ret, rawframe = cap.read()
-            if ret:
+            if motion(frame1, frame2):            
                 try:
-                    frame = cv2.resize(rawframe, (299, 299))
+                    frame = cv2.resize(frame2, (299, 299))
                     frame = frame.reshape(1, 299, 299, 3)
                     resp = requests.post(EDGE_MASTER_SERVICE, json={
                         'cam_id': cam_id,
@@ -42,17 +71,19 @@ def main():
                 except Exception as e:
                     logging.error("Camera %d failed to publish image to Edge Master Service", cam_id)
                     raise e
-
-                if DEBUG:
-                    cv2.imshow("Crow", rawframe)
-            else:
-                print("Error reading capture device")
-                break
-            cv2.waitKey(10)
+            
+            if DEBUG:
+                cv2.imshow("Crow", frame2)
+                if cv2.waitKey(1) & 0xFF == 27:
+                    break
+            
+            frame1 = frame2
+            _, frame2 = cap.read()
+            
     else:
         logging.error("Failed to open capture camera: %d", cam_id)
 
 
 if __name__ == '__main__':
-    time.sleep(5 + int(5 * random.random()))  # warm up time for other services
+    time.sleep(5)  # warm up time for other services
     main()
