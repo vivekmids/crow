@@ -41,7 +41,7 @@ def save_image(image_array):
     #convert numpy array to PNG/jpg
     #print(image_array.shape)
     logging.error(image_array.shape)
-    img = image_array.resize(size=(299, 299))
+    img = image_array.reshape(299, 299,3)
     img = np.array(img)
     img = Image.fromarray(img)
     file_name ='image.jpeg'
