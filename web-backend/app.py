@@ -7,12 +7,16 @@ import numpy as np
 import os
 from flask import Flask, request, jsonify
 from PIL import Image
+import random
+import string
 
 app = Flask(__name__)
 
 endpoint = 'https://s3.us.cloud-object-storage.appdomain.cloud'
 s3 = boto3.resource('s3',endpoint_url=endpoint)
 
+def rand_str_generator(size, chars=string.ascii_letters):
+    return ''.join(random.choice(chars) for _ in range(size))
 
 def get_images():
     """Here we should return a list of images the customer has already seen
@@ -44,21 +48,21 @@ def save_image(image_array):
     img = image_array.reshape(299, 299,3)
     img = np.array(img)
     img = Image.fromarray(img)
-    file_name ='image.jpeg'
+    file_name ='image_' + rand_str_generator(3)+'.jpeg'
     img.save(file_name)
-    cwd = os.getcwd()
-    file = cwd +'/'+file_name
+    #cwd = os.getcwd()
+    #file = cwd +'/'+file_name
     print('in save_image before calling s3')
 
     # If S3 object_name was not specified, use file_name
     if object_name is None:
-        object_name = file
+        object_name = file_name
 
     # Upload the file
     s3_client = boto3.client('s3',endpoint_url=endpoint)
     print('s3 client instantiated')
     try:
-        response = s3_client.upload_file(file, bucket,object_name)
+        response = s3_client.upload_file(file_name, bucket,object_name)
     except Exception as e:
         logging.error(e)
         return False
@@ -125,7 +129,7 @@ def handle_route():
         print("here1")
         return jsonify({
         "image": save_image(payload['image']),
-        "db_row_id": insert_to_db(payload['DEVICE_ID','cam_id','detterent_type','date_time','soundfile_name','key','detected_animals','updated','found_something','bucket_name'])
+        "db_row_id": insert_to_db(payload['DEVICE_ID'],['cam_id'],['detterent_type'],['date_time'],['soundfile_name'],['key'],['detected_animals'],['updated'],['found_something'])
         })
 
 @app.route('/xyz', methods=['GET', 'POST'])
