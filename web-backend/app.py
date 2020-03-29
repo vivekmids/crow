@@ -130,7 +130,7 @@ def handle_route():
         return jsonify({
             "image": save_image(payload['image']),
             "db_row_id": insert_to_db(
-                payload['DEVICE_ID'],
+                payload['device_id'],
                 payload['cam_id'],
                 payload['detterent_type'],
                 payload['date_time'],
