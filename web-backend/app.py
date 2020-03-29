@@ -71,7 +71,7 @@ def save_image(image_array):
     #return {}
 
 
-def insert_to_db(DEVICE_ID,cam_id,detterent_type,date_time,soundfile_name,key,detected_animals,updated,found_something,bucket='w210-bucket'):
+def insert_to_db(device_id,cam_id,detterent_type,date_time,soundfile_name,key,detected_animals,updated,found_something,bucket='w210-bucket'):
    """Here we save the images. The input data will be:
             {
                 'updated': True,
@@ -98,7 +98,7 @@ def insert_to_db(DEVICE_ID,cam_id,detterent_type,date_time,soundfile_name,key,de
        cur = conn.cursor()
 
        postgres_insert_query ="""insert into crow(device_id,cam_id,detterent_type,date_time,soundfile_name,key_name,detected_animals,updated,found_something,bucket_name) VALUES (%s, %s, %s, %s, %s, %s, %s,%s,%s,%s)"""
-       record_to_insert = (DEVICE_ID,cam_id,detterent_type,date_time,soundfile_name,key,detected_animals,updated,found_something,bucket)
+       record_to_insert = (device_id,cam_id,detterent_type,date_time,soundfile_name,key,detected_animals,updated,found_something,bucket)
        cur.execute(postgres_insert_query,record_to_insert)
        conn.commit()
        count = cur.rowcount
@@ -129,7 +129,7 @@ def handle_route():
         print("here1")
         return jsonify({
         "image": save_image(payload['image']),
-        "db_row_id": insert_to_db(payload['DEVICE_ID'],['cam_id'],['detterent_type'],['date_time'],['soundfile_name'],['key'],['detected_animals'],['updated'],['found_something'])
+        "db_row_id": insert_to_db(payload['device_id'],['cam_id'],['detterent_type'],['date_time'],['soundfile_name'],['key'],['detected_animals'],['updated'],['found_something'])
         })
 
 @app.route('/xyz', methods=['GET', 'POST'])
