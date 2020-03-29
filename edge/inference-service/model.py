@@ -9,7 +9,7 @@ def load_model():
     """Here lies logic to load the model"""
     # load model from h5 file
     
-    model = tf.lite.Interpreter(model_path="edge/model/converted_quant_model.tflite")
+    model = tf.lite.Interpreter(model_path="model/converted_quant_model.tflite")
     model.allocate_tensors()
 #    input_details = model.get_input_details()
 #    output_details = model.get_output_details()
