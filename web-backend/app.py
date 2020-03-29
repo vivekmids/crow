@@ -128,18 +128,23 @@ def handle_route():
         payload['image'] = pickle.loads(payload['image'].encode('latin-1'))
         print("here1")
         return jsonify({
-        "image": save_image(payload['image']),
-        "db_row_id": insert_to_db(payload['device_id'],['cam_id'],['detterent_type'],['date_time'],['soundfile_name'],['key'],['detected_animals'],['updated'],['found_something'])
+            "image": save_image(payload['image']),
+            "db_row_id": insert_to_db(
+                payload['DEVICE_ID'],
+                payload['cam_id'],
+                payload['detterent_type'],
+                payload['date_time'],
+                payload['soundfile_name'],
+                payload['key'],
+                payload['detected_animals'],
+                payload['updated'],
+                payload['found_something']
+            )
         })
-
-@app.route('/xyz', methods=['GET', 'POST'])
-def test():
-    print("inside test")
-    return jsonify([])
 
 
 def main():
-    app.run('0.0.0.0', 8000,debug=True)
+    app.run('0.0.0.0', 8000, debug=True)
 
 
 if __name__ == '__main__':
