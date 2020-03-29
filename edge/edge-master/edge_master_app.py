@@ -14,7 +14,7 @@ def env_or_default(name, default):
 
 INFERENCE_SERVICE = env_or_default('INFERENCE_SERVICE', 'http://localhost:5050')
 DETERRENT_SERVICE = env_or_default('DETERRENT_SERVICE', 'http://localhost:5100')
-CLOUD_ENDPOINT = env_or_default('CLOUD_ENDPOINT', None)
+CLOUD_ENDPOINT = env_or_default('CLOUD_ENDPOINT', 'http://169.63.11.147:8000')
 DEVICE_ID = env_or_default('DEVICE_ID', "edge-device-" + str(uuid.uuid4())[:5])
 
 # service to keep track of these bad bois
@@ -71,10 +71,11 @@ def update_status():
                 'updated': True,
                 'device_id': DEVICE_ID,
                 'cam_id': cam_id,
-                'image': data['image'].encode('latin-1'),
+                'image': data['image'],
                 'inference_response': inference_response,
                 'deterrent_response': deterrent_response
             })
+            print('After sending image to cloud ' + str(resp.text))
 
     return jsonify({
         'updated': True,
