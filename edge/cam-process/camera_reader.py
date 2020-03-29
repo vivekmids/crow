@@ -11,7 +11,7 @@ import requests
 logging.getLogger().setLevel(logging.INFO)
 
 EDGE_MASTER_SERVICE = 'http://localhost:5000/process-image'
-DEBUG = True
+DEBUG = False
 
 def distMap(frame1, frame2):
     """outputs distance between two frames"""
@@ -35,7 +35,7 @@ def motion(frame1, frame2, sdThresh=10):
         cv2.imshow('dist', mod)
         cv2.putText(frame2, "Standard Deviation - {}".format(round(stDev[0][0],0)), (70, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 255), 1, cv2.LINE_AA)
     if stDev > sdThresh:
-        logging.info("Motion detected");
+        
         return True
     else:
         return False
@@ -58,7 +58,8 @@ def main():
         _, frame1 = cap.read()
         _, frame2 = cap.read()
         while True:
-            if motion(frame1, frame2):            
+            if motion(frame1, frame2):
+                logging.info("Motion detected on " + str(cam_id));
                 try:
                     frame = cv2.resize(frame2, (299, 299))
                     frame = frame.reshape(1, 299, 299, 3)
@@ -73,7 +74,7 @@ def main():
                     raise e
             
             if DEBUG:
-                cv2.imshow("Crow", frame2)
+                cv2.imshow("Crow" + str(cam_id), frame2)
                 if cv2.waitKey(1) & 0xFF == 27:
                     break
             
