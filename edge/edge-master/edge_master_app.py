@@ -66,6 +66,7 @@ def update_status():
             deterrent_response = resp.json()
 
         # TODO: post data to cloud
+        
         if CLOUD_ENDPOINT:
             resp = requests.post(CLOUD_ENDPOINT, json={
                 'updated': True,
