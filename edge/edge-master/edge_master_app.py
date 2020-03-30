@@ -14,7 +14,7 @@ def env_or_default(name, default):
 
 INFERENCE_SERVICE = env_or_default('INFERENCE_SERVICE', 'http://localhost:5050')
 DETERRENT_SERVICE = env_or_default('DETERRENT_SERVICE', 'http://localhost:5100')
-CLOUD_ENDPOINT = env_or_default('CLOUD_ENDPOINT', 'http://169.63.11.147:8000')
+CLOUD_ENDPOINT = env_or_default('CLOUD_ENDPOINT', 'http://169.63.11.147:8000/api/infer')
 DEVICE_ID = env_or_default('DEVICE_ID', "edge-device-" + str(uuid.uuid4())[:5])
 
 # service to keep track of these bad bois

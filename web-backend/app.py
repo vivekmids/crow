@@ -1,21 +1,24 @@
 import pickle
 import logging
-import boto3
-import psycopg2
 import json
-import numpy as np
-import os
+import io
 from datetime import datetime
 
+import numpy as np
+import boto3
+import psycopg2
 from flask import Flask, request, jsonify
 from PIL import Image
 import random
 import string
 
-app = Flask(__name__)
+S3_ENDPOINT = 'https://s3.us.cloud-object-storage.appdomain.cloud'
+POSTGRES_HOST = "169.63.11.147"
+POSTGRES_DATABASE = "postgres"
+POSTGRES_USER = "postgres"
+POSTGRES_PASSWORD = "scarecrow"
 
-endpoint = 'https://s3.us.cloud-object-storage.appdomain.cloud'
-s3 = boto3.resource('s3', endpoint_url=endpoint)
+app = Flask(__name__)
 
 
 def rand_str_generator(size, chars=string.ascii_letters):
@@ -32,7 +35,8 @@ def get_images():
 
 
 def get_image_info(one=False):
-    conn = psycopg2.connect(host="169.63.11.147", database="postgres", user="postgres", password="scarecrow",
+    conn = psycopg2.connect(host=POSTGRES_HOST, database=POSTGRES_DATABASE,
+                            user=POSTGRES_USER, password=POSTGRES_PASSWORD,
                             sslmode="disable")
     cur = conn.cursor()
 
@@ -45,34 +49,29 @@ def get_image_info(one=False):
 
 def save_image(image_array, device_id, cam_id, detected_animals, time_stamp):
     bucket = 'w210-bucket'
-    object_name = None
-    #convert numpy array to PNG/jpg
-    #print(image_array.shape)
-    logging.error(image_array.shape)
-    img = image_array.reshape(299, 299,3)
+    object_name = f'image-{device_id}-{cam_id}-{detected_animals}-{time_stamp}-{rand_str_generator(3)}.jpeg'
+
+    img = image_array.reshape(299, 299, 3)
     img = np.array(img)
     img = Image.fromarray(img)
-    file_name = f'image-{device_id}-{cam_id}-{detected_animals}-{time_stamp}-{rand_str_generator(3)}.jpeg'
 
-    img.save(file_name)
-    #cwd = os.getcwd()
-    #file = cwd +'/'+file_name
-    print('in save_image before calling s3')
-
-    # If S3 object_name was not specified, use file_name
-    if object_name is None:
-        object_name = file_name
+    bytes_file = io.BytesIO()
+    img.save(bytes_file, format="jpeg")
 
     # Upload the file
-    s3_client = boto3.client('s3',endpoint_url=endpoint)
-    print('s3 client instantiated')
+    s3_client = boto3.resource('s3', endpoint_url=S3_ENDPOINT)
     try:
-        response = s3_client.upload_file(file_name, bucket,object_name)
+        response = s3_client.put_object(
+            Body=img.getvalue(),
+            Bucket=bucket,
+            Key=object_name
+        )
+        logging.info(f"Saved image to s3: {response}")
     except Exception as e:
         logging.error(e)
         return None
 
-    return file_name
+    return object_name
 
 
 def insert_to_db(device_id, cam_id, deterrent_type, date_time, soundfile_name, key, detected_animals, updated, found_something, bucket='w210-bucket'):
@@ -91,22 +90,23 @@ def insert_to_db(device_id, cam_id, deterrent_type, date_time, soundfile_name, k
         We will simply be logging this data so it doesn't really matter
     """
     try:
-        conn = psycopg2.connect(host="169.63.11.147", database="postgres", user="postgres", password="scarecrow", sslmode="disable")
+        conn = psycopg2.connect(host="169.63.11.147", database="postgres", user="postgres", password="scarecrow",
+                                sslmode="disable")
         cur = conn.cursor()
 
         postgres_insert_query = """
-        INSERT INTO crow (device_id, cam_id, detterent_type, date_time, soundfile_name, key_name, detected_animals, updated, found_something, bucket_name)
+        INSERT INTO crow (device_id, cam_id, detterent_type, date_time, soundfile_name, key_name, detected_animals,
+                          updated, found_something, bucket_name)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        RETURNING rowid
         """
-        record_to_insert = (
-            device_id, cam_id, deterrent_type, date_time, soundfile_name, key, detected_animals, updated,
-            found_something, bucket)
+        record_to_insert = (device_id, cam_id, deterrent_type, date_time, soundfile_name, key, detected_animals,
+                            updated, found_something, bucket)
         cur.execute(postgres_insert_query, record_to_insert)
         conn.commit()
+        row_id = cur.fetchone()[0]
 
-        count = cur.rowcount
-        logging.info(f"{count} records inserted successfully into crow table")
-
+        logging.info(f"Saved row_id to database: {row_id}")
     except (Exception, psycopg2.Error) as error:
         if conn:
             logging.error("Failed to insert record into mobile table", error)
@@ -119,26 +119,22 @@ def insert_to_db(device_id, cam_id, deterrent_type, date_time, soundfile_name, k
             print("PostgreSQL connection is closed")
 
 
-@app.route('/', methods=['GET', 'POST'])
-def handle_route():
+@app.route('/api/inferences', methods=['GET', 'POST'])
+def api_data():
     print("inside handle")
     if request.method == 'GET':
         return jsonify(get_images())
     elif request.method == 'POST':
-        print('inside POST')
         payload = request.get_json(force=True)
-        print("here")
         payload['image'] = pickle.loads(payload['image'].encode('latin-1'))
-        print("here1")
 
         time_stamp = datetime.now()
         detected_animals = payload['inference_response']['detected_animals']
         cam_id = payload['cam_id']
         device_id = payload['device_id']
+        image = payload['image']
 
-        image_key = save_image(payload['image'], device_id, cam_id, detected_animals, time_stamp)
-        print("saved image")
-
+        image_key = save_image(image, device_id, cam_id, detected_animals, time_stamp)
         db_row_id = insert_to_db(
             device_id,
             cam_id,
