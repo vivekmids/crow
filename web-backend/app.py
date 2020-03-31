@@ -49,7 +49,7 @@ def get_image_info(one=False):
 
 def save_image(image_array, device_id, cam_id, detected_animals, time_stamp):
     bucket = 'w210-bucket'
-    object_name = f'image-{device_id}-{cam_id}-{detected_animals}-{time_stamp}-{rand_str_generator(3)}.jpeg'
+    object_name = f'image_{device_id}_{cam_id}_{detected_animals}_{time_stamp}_{rand_str_generator(3)}.jpeg'.replace(' ', '_')
 
     img = image_array.reshape(299, 299, 3)
     img = np.array(img)
@@ -61,9 +61,8 @@ def save_image(image_array, device_id, cam_id, detected_animals, time_stamp):
     # Upload the file
     s3_client = boto3.resource('s3', endpoint_url=S3_ENDPOINT)
     try:
-        response = s3_client.put_object(
-            Body=img.getvalue(),
-            Bucket=bucket,
+        response = s3_client.Bucket(bucket).upload_fileobj(
+            bytes_file,
             Key=object_name
         )
         logging.info(f"Saved image to s3: {response}")
@@ -95,7 +94,7 @@ def insert_to_db(device_id, cam_id, deterrent_type, date_time, soundfile_name, k
         cur = conn.cursor()
 
         postgres_insert_query = """
-        INSERT INTO crow (device_id, cam_id, detterent_type, date_time, soundfile_name, key_name, detected_animals,
+        INSERT INTO crow (device_id, cam_id, deterrent_type, date_time, soundfile_name, key_name, detected_animals,
                           updated, found_something, bucket_name)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING rowid
@@ -107,6 +106,8 @@ def insert_to_db(device_id, cam_id, deterrent_type, date_time, soundfile_name, k
         row_id = cur.fetchone()[0]
 
         logging.info(f"Saved row_id to database: {row_id}")
+
+        return row_id
     except (Exception, psycopg2.Error) as error:
         if conn:
             logging.error("Failed to insert record into mobile table", error)
