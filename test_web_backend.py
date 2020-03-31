@@ -1,6 +1,7 @@
 import requests
 import numpy as np
 import pickle
+import random
 from PIL import Image
 
 img = Image.open("/home/ocamlmycaml/Downloads/deer-silo.jpg")
@@ -14,7 +15,11 @@ resp = requests.post('http://localhost:8000/api/inferences', json={
     'image': pickle.dumps(img).decode('latin-1'),
     "updated": True,
     "inference_response": {
-        "detected_animals": "deer",
+        "detected_animals": random.choice([
+            'skunk', 'fox', 'rodent', 'dog', 'squirrel', 'cat', 'rabbit',
+            'bird', 'cow', 'bobcat', 'deer', 'raccoon', 'coyote', 'opossum'
+            'other'
+        ]),
         "found_something": True
     },
     "deterrent_response": {

@@ -1,16 +1,17 @@
 import pickle
 import logging
-import json
 import io
+import random
+import string
+import base64
 from datetime import datetime
 
 import numpy as np
 import boto3
 import psycopg2
+from psycopg2.extras import DictCursor
 from flask import Flask, request, jsonify
 from PIL import Image
-import random
-import string
 
 S3_ENDPOINT = 'https://s3.us.cloud-object-storage.appdomain.cloud'
 POSTGRES_HOST = "169.63.11.147"
@@ -18,38 +19,93 @@ POSTGRES_DATABASE = "postgres"
 POSTGRES_USER = "postgres"
 POSTGRES_PASSWORD = "scarecrow"
 
+DEFAULT_API_ROW_COUNT = 10
+
 app = Flask(__name__)
+
+
+def get_conn():
+    return psycopg2.connect(host=POSTGRES_HOST, database=POSTGRES_DATABASE,
+                            user=POSTGRES_USER, password=POSTGRES_PASSWORD,
+                            sslmode="disable")
+
+
+def get_s3_client():
+    return boto3.resource('s3', endpoint_url=S3_ENDPOINT)
 
 
 def rand_str_generator(size, chars=string.ascii_letters):
     return ''.join(random.choice(chars) for _ in range(size))
 
 
-def get_images():
+def get_summary_stats(conn):
     """Here we should return a list of images the customer has already seen
     """
-    stat_summary = get_image_info()
-    stat_summary = json.dumps(stat_summary, indent=4, sort_keys=True, default=str)
-    print(stat_summary)
-    return stat_summary
+    cur = conn.cursor(cursor_factory=DictCursor)
+    cur.execute("""
+        SELECT
+            COUNT(*) AS total_count,
+            MAX(date_time) AS max_date_time,
+            MIN(date_time) AS min_date_time,
+            COUNT(DISTINCT detected_animals) AS num_distinct_animals,
+            COUNT(CASE WHEN deterrent_type = 'sound' THEN 1 ELSE 0 END) AS count_sound_deployed,
+            COUNT(CASE WHEN deterrent_type = 'light' THEN 1 ELSE 0 END) AS count_light_deployed
+        FROM crow
+    """)
+    summaries = [dict(item) for item in cur][0]
+
+    cur.execute("""
+        SELECT
+            detected_animals,
+            COUNT(*) AS count
+        FROM crow
+        GROUP BY detected_animals
+    """)
+    counts_by_detected_animal = {item['detected_animals']: item['count'] for item in cur}
+
+    return {
+        'summary_stats': summaries,
+        'animal_counts': counts_by_detected_animal
+    }
 
 
-def get_image_info(one=False):
-    conn = psycopg2.connect(host=POSTGRES_HOST, database=POSTGRES_DATABASE,
-                            user=POSTGRES_USER, password=POSTGRES_PASSWORD,
-                            sslmode="disable")
+def get_image_info(s3_client, conn, num_rows=DEFAULT_API_ROW_COUNT, fetch_images=False):
     cur = conn.cursor()
 
-    postgres_select_query = """select * from crow"""
+    postgres_select_query = f"""
+    SELECT * FROM crow
+    ORDER BY rowid DESC
+    LIMIT {num_rows}
+    """
     cur.execute(postgres_select_query)
-    r = [dict((cur.description[i][0], value) for i, value in enumerate(row)) for row in cur.fetchall()]
+
+    rows = [
+        dict((cur.description[i][0], value) for i, value in enumerate(row))
+        for row in cur.fetchall()
+    ]
     cur.close()
-    return (r[0] if r else None) if one else r
+
+    # fetch image data for each row
+    if fetch_images:
+        for row in rows:
+            row['base64_encoded_image'] = None
+            bucket = row['bucket_name']
+            key_name = row['key_name']
+
+            try:
+                img_obj = s3_client.Bucket(bucket).Object(key_name)
+                img_bytes = img_obj.get()['Body'].read()
+                row['base64_encoded_image'] = base64.b64encode(img_bytes).decode('utf8')
+            except Exception as e:
+                logging.error(f"Unable to fetch image from s3: {key_name}", e)
+
+    return rows
 
 
-def save_image(image_array, device_id, cam_id, detected_animals, time_stamp):
+def save_image(s3_client, image_array, device_id, cam_id, detected_animals, time_stamp):
     bucket = 'w210-bucket'
-    object_name = f'image_{device_id}_{cam_id}_{detected_animals}_{time_stamp}_{rand_str_generator(3)}.jpeg'.replace(' ', '_')
+    object_name = f'image/{device_id}/{cam_id}/{detected_animals}/{time_stamp}_{rand_str_generator(3)}.jpeg'
+    object_name = object_name.replace(' ', '_')
 
     img = image_array.reshape(299, 299, 3)
     img = np.array(img)
@@ -57,15 +113,14 @@ def save_image(image_array, device_id, cam_id, detected_animals, time_stamp):
 
     bytes_file = io.BytesIO()
     img.save(bytes_file, format="jpeg")
+    logging.error(len(bytes_file.getvalue()))
 
     # Upload the file
-    s3_client = boto3.resource('s3', endpoint_url=S3_ENDPOINT)
     try:
-        response = s3_client.Bucket(bucket).upload_fileobj(
-            bytes_file,
-            Key=object_name
+        s3_client.Bucket(bucket).put_object(
+            Key=object_name,
+            Body=bytes_file.getvalue()
         )
-        logging.info(f"Saved image to s3: {response}")
     except Exception as e:
         logging.error(e)
         return None
@@ -73,7 +128,8 @@ def save_image(image_array, device_id, cam_id, detected_animals, time_stamp):
     return object_name
 
 
-def insert_to_db(device_id, cam_id, deterrent_type, date_time, soundfile_name, key, detected_animals, updated, found_something, bucket='w210-bucket'):
+def insert_to_db(conn, device_id, cam_id, deterrent_type, date_time, soundfile_name, key, detected_animals, updated,
+                 found_something, bucket='w210-bucket'):
     """Here we save the images. The input data will be:
             {
                 'updated': True,
@@ -89,8 +145,6 @@ def insert_to_db(device_id, cam_id, deterrent_type, date_time, soundfile_name, k
         We will simply be logging this data so it doesn't really matter
     """
     try:
-        conn = psycopg2.connect(host="169.63.11.147", database="postgres", user="postgres", password="scarecrow",
-                                sslmode="disable")
         cur = conn.cursor()
 
         postgres_insert_query = """
@@ -122,9 +176,22 @@ def insert_to_db(device_id, cam_id, deterrent_type, date_time, soundfile_name, k
 
 @app.route('/api/inferences', methods=['GET', 'POST'])
 def api_data():
-    print("inside handle")
+    s3_client = get_s3_client()
+    conn = get_conn()
+
     if request.method == 'GET':
-        return jsonify(get_images())
+        db_summary = get_summary_stats(conn)
+        images = get_image_info(
+            s3_client,
+            conn,
+            request.args.get('rows', DEFAULT_API_ROW_COUNT),
+            'fetch_images' in request.args
+        )
+
+        return jsonify({
+            'summary': db_summary,
+            'images': images
+        })
     elif request.method == 'POST':
         payload = request.get_json(force=True)
         payload['image'] = pickle.loads(payload['image'].encode('latin-1'))
@@ -135,8 +202,9 @@ def api_data():
         device_id = payload['device_id']
         image = payload['image']
 
-        image_key = save_image(image, device_id, cam_id, detected_animals, time_stamp)
+        image_key = save_image(s3_client, image, device_id, cam_id, detected_animals, time_stamp)
         db_row_id = insert_to_db(
+            conn,
             device_id,
             cam_id,
             payload['deterrent_response']['deployed_deterrent']['type'],

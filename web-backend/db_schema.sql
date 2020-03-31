@@ -1,5 +1,5 @@
 CREATE TABLE crow (
-    rowid SERIAL,
+    rowid SERIAL PRIMARY KEY,
     device_id VARCHAR(100),
     cam_id VARCHAR(100),
     date_time timestamp,
