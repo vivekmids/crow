@@ -9,7 +9,7 @@ img = img.resize(size=(299, 299))
 img = np.array(img)
 
 print("before request")
-resp = requests.post('http://localhost:8000/api/inferences', json={
+resp = requests.post('http://169.63.11.147:8000/api/inferences', json={
     "cam_id": "0",
     "device_id": "local-test-script",
     'image': pickle.dumps(img).decode('latin-1'),
@@ -17,7 +17,7 @@ resp = requests.post('http://localhost:8000/api/inferences', json={
     "inference_response": {
         "detected_animals": random.choice([
             'skunk', 'fox', 'rodent', 'dog', 'squirrel', 'cat', 'rabbit',
-            'bird', 'cow', 'bobcat', 'deer', 'raccoon', 'coyote', 'opossum'
+            'bird', 'cow', 'bobcat', 'deer', 'raccoon', 'coyote', 'opossum',
             'other'
         ]),
         "found_something": True
