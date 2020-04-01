@@ -13,12 +13,12 @@ import Img from "gatsby-image"
  * - `useStaticQuery`: https://www.gatsbyjs.org/docs/use-static-query/
  */
 
-const ScarecrowLogo = ({ style }) => {
+const ScarecrowLogo = (props) => {
   const data = useStaticQuery(graphql`
     query {
       file(relativePath: { eq: "scarecrow-logo.png" }) {
         childImageSharp {
-          fixed(width: 50, height: 50) {
+          fixed(width: 28, height: 28) {
             ...GatsbyImageSharpFixed
           }
         }
@@ -26,7 +26,9 @@ const ScarecrowLogo = ({ style }) => {
     }
   `)
 
-  return <Img style={style} fixed={data.file.childImageSharp.fixed} />
+  return (
+    <Img fixed={data.file.childImageSharp.fixed} {...props} />
+  );
 }
 
 export default ScarecrowLogo

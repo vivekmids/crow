@@ -13,10 +13,10 @@ import Img from "gatsby-image"
  * - `useStaticQuery`: https://www.gatsbyjs.org/docs/use-static-query/
  */
 
-const Squirrel = (props) => {
+const PhotoCatherine = (props) => {
   const data = useStaticQuery(graphql`
     query {
-      squirrel: file(relativePath: { eq: "squirrel.png" }) {
+      catherine: file(relativePath: { eq: "squirrel.png" }) {
         childImageSharp {
           fluid(maxWidth: 300) {
             ...GatsbyImageSharpFluid
@@ -27,8 +27,8 @@ const Squirrel = (props) => {
   `)
 
   return (
-   <Img fluid={data.squirrel.childImageSharp.fluid} {...props} />
+    <Img fluid={data.catherine.childImageSharp.fluid} {...props} />
   );
 }
 
-export default Squirrel;
+export default PhotoCatherine;
