@@ -1,12 +1,10 @@
 import React from "react"
 
-import Layout from "../components/layout"
+import Layout from "../components/layouts/default-layout"
 import Squirrel from "../components/images/squirrel"
-import SEO from "../components/seo"
 
 const IndexPage = () => (
-  <Layout>
-    <SEO title="Home" />
+  <Layout title="Home">
     <div style={{maxWidth: `300px`, marginBottom: `1.45rem`}} >
       <div>
         <Squirrel />

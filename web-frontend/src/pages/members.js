@@ -1,11 +1,9 @@
 import React from "react"
 
-import Layout from "../components/layout"
-import SEO from "../components/seo"
+import Layout from "../components/layouts/default-layout"
 
 const MembersPage = () => (
-  <Layout>
-    <SEO title="Members" />
+  <Layout title="Members">
     <h1>Hi from the members page</h1>
   </Layout>
 )

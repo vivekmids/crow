@@ -2,8 +2,7 @@ import { Link } from "gatsby"
 import PropTypes from "prop-types"
 import React from "react"
 
-import ScarecrowLogo from "./images/scarecrow_logo"
-import "./header.css"
+import ScarecrowLogo from "../images/scarecrow_logo"
 
 const Header = ({ siteTitle }) => {
 
