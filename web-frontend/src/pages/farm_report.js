@@ -4,7 +4,11 @@ import Layout from "../components/layouts/default-layout"
 
 const FarmReport = () => (
   <Layout title="Farm Report">
-    <h1>Hello from the Farm Report page!</h1>
+    <section className="section">
+      <div className="container">
+        <p>[ Almost got it working !! ]</p>
+      </div>
+    </section>
   </Layout>
 )
 

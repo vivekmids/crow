@@ -4,7 +4,11 @@ import Layout from "../components/layouts/default-layout"
 
 const HowItWorkspage = () => (
   <Layout title="How it works">
-    <h1>Hello from the How it works Page!</h1>
+    <section className="section">
+      <div className="container">
+        <p>[needs to be filled in here]</p>
+      </div>
+    </section>
   </Layout>
 )
 

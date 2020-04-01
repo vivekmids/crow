@@ -1,8 +1,8 @@
 FROM node:12-buster AS build
-RUN yarn global add gatsby-cli
+RUN npm install -g gatsby-cli
 WORKDIR /app
 ADD . ./
-RUN yarn
+RUN npm install
 RUN gatsby build
 
 FROM gatsbyjs/gatsby
