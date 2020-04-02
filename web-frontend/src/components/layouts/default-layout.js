@@ -31,7 +31,7 @@ const Layout = ({ title, children }) => {
       <main>
         {children}
       </main>
-      <footer class="footer">
+      <footer className="footer">
         <div className="content has-text-centered">
           <p>
             <Link to="/" activeClassName="is-activate">Home</Link>{` | `}
