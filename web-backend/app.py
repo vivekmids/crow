@@ -174,7 +174,7 @@ def insert_to_db(conn, device_id, cam_id, deterrent_type, date_time, soundfile_n
             print("PostgreSQL connection is closed")
 
 
-@app.route('/api/inferences', methods=['GET', 'POST'])
+@app.route('/api/inferences/', methods=['GET', 'POST'])
 def api_data():
     s3_client = get_s3_client()
     conn = get_conn()

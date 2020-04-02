@@ -23,7 +23,7 @@ const FarmReport = () => {
   })
 
   useEffect(() => {
-    fetch(`http://169.63.11.147:8000/api/inferences?rows=1`)
+    fetch(`/api/inferences?rows=1`)
       .then(response => response.json())
       .then(resultData => {
         setCloudData(resultData)

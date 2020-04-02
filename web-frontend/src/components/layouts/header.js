@@ -1,8 +1,16 @@
 import { Link } from "gatsby"
 import PropTypes from "prop-types"
 import React, { useState } from "react"
+import styled from "styled-components"
 
 import ScarecrowLogo from "../images/scarecrow_logo"
+
+const HamburgerButton = styled.button`
+  &, &:hover, &:active {
+    background: inherit;
+    border: inherit;
+  }
+`
 
 const Header = ({ siteTitle }) => {
 
@@ -17,12 +25,12 @@ const Header = ({ siteTitle }) => {
           </figure>
         </Link>
 
-        <a role="button" className="navbar-burger burger" aria-label="menu" aria-expanded="false"
+        <HamburgerButton className="navbar-burger burger" aria-label="menu" aria-expanded="false"
             onClick={() => setHamburger(!hamburgerExpanded)}>
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
           <span aria-hidden="true"></span>
-        </a>
+        </HamburgerButton>
       </div>
 
       <div className={`navbar-menu${ hamburgerExpanded ? " is-active" : ""}`}>
