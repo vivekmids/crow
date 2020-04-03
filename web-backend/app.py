@@ -189,7 +189,7 @@ def api_data():
         )
 
         return jsonify({
-            'summary': db_summary,
+            **db_summary,
             'images': images
         })
     elif request.method == 'POST':
