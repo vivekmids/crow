@@ -48,8 +48,8 @@ def get_summary_stats(conn):
             MAX(date_time) AS max_date_time,
             MIN(date_time) AS min_date_time,
             COUNT(DISTINCT detected_animals) AS num_distinct_animals,
-            COUNT(CASE WHEN deterrent_type = 'sound' THEN 1 ELSE 0 END) AS count_sound_deployed,
-            COUNT(CASE WHEN deterrent_type = 'light' THEN 1 ELSE 0 END) AS count_light_deployed
+            SUM(CASE WHEN deterrent_type = 'sound' THEN 1 ELSE 0 END) AS count_sound_deployed,
+            SUM(CASE WHEN deterrent_type = 'light' THEN 1 ELSE 0 END) AS count_light_deployed
         FROM crow
     """)
     summaries = [dict(item) for item in cur][0]

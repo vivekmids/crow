@@ -3,7 +3,6 @@ import React, { useState } from 'react'
 import Layout from "../components/layouts/default-layout"
 import ImageList from '../components/image_list'
 import AnimalCountGraph from "../components/graphs/animal_counts"
-import SummaryStatGraph from "../components/graphs/summary_stats"
 
 const DEFAULT_DATA = {
   "images": [],
@@ -59,13 +58,17 @@ export default () => {
   return (
     <Layout title="Garden Report">
       <section className="section">
-        <div className="columns">
-          <div className="column is-half">
-            <SummaryStatGraph summary_stats={gardenData.summary_stats} />
-            <AnimalCountGraph animal_counts={gardenData.animal_counts} />
-          </div>
-          <div className="column is-half">
-            <ImageList images={gardenData.images} />
+        <div className="container">
+
+        </div>
+        <div className="container">
+          <div className="columns">
+            <div className="column is-half">
+              <AnimalCountGraph animal_counts={gardenData.animal_counts} />
+            </div>
+            <div className="column is-half">
+              <ImageList images={gardenData.images} />
+            </div>
           </div>
         </div>
       </section>
