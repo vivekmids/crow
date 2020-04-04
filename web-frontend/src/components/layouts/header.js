@@ -44,8 +44,8 @@ const Header = ({ siteTitle }) => {
           <Link className="navbar-item" activeClassName="is-active" to="/how_it_works/">
             How It Works
           </Link>
-          <Link className="navbar-item" activeClassName="is-active" to="/farm_report/">
-            Farm Report
+          <Link className="navbar-item" activeClassName="is-active" to="/garden_report/">
+            Garden Report
           </Link>
         </div>
       </div>

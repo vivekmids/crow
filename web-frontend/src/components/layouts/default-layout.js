@@ -37,7 +37,7 @@ const Layout = ({ title, children }) => {
             <Link to="/" activeClassName="is-activate">Home</Link>{` | `}
             <Link activeClassName="is-active" to="/members/">Members</Link>{` | `}
             <Link activeClassName="is-active" to="/how_it_works/">How It Works</Link>{` | `}
-            <Link activeClassName="is-active" to="/farm_report/">Farm Report</Link>
+            <Link activeClassName="is-active" to="/garden_report/">Garden Report</Link>
           </p>
           <p>
             Scarecrow © {new Date().getFullYear()}, Built with
