@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import Layout from "../components/layouts/default-layout"
 import ImageList from '../components/image_list'
 import AnimalCountGraph from "../components/graphs/animal_counts"
-import fetch from "node-fetch"
+import fetch from "isomorphic-fetch"
 
 const DEFAULT_DATA = {
   "images": [],
