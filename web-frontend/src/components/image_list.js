@@ -1,4 +1,11 @@
 import React from "react"
+import moment from "moment"
+
+
+function parseSoundUsed(fileName) {
+  const splits = fileName.split("/")
+  return splits[splits.length - 2]
+}
 
 const ImageCard = ({
   cam_id,
@@ -21,8 +28,10 @@ const ImageCard = ({
           <p>Detected: <em>{detected_animals}</em></p>
           <p>Deterrent Used: {deterrent_type}</p>
           <p>Device: {device_id} -- {cam_id}</p>
-          <p>Date: {date_time}</p>
-          <p>soundfile_name: {soundfile_name}</p>
+          <p>Date: {moment(date_time).format("YYYY-MM-DD HH:MM")}</p>
+          { deterrent_type === 'sound'
+            ? <p>Sound Used: {parseSoundUsed(soundfile_name)}</p>
+            : ``}
         </div>
       </div>
     </article>

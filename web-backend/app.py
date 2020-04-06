@@ -5,6 +5,7 @@ import random
 import string
 import base64
 from datetime import datetime
+from collections import defaultdict
 
 import numpy as np
 import boto3
@@ -44,40 +45,79 @@ def get_summary_stats(conn):
     cur = conn.cursor(cursor_factory=DictCursor)
     cur.execute("""
         SELECT
-            COUNT(*) AS total_count,
-            MAX(date_time) AS max_date_time,
-            MIN(date_time) AS min_date_time,
-            COUNT(DISTINCT detected_animals) AS num_distinct_animals,
-            SUM(CASE WHEN deterrent_type = 'sound' THEN 1 ELSE 0 END) AS count_sound_deployed,
-            SUM(CASE WHEN deterrent_type = 'light' THEN 1 ELSE 0 END) AS count_light_deployed
+            COUNT(*) AS totalCount,
+            MIN(date_time) AS minFromDate,
+            MAX(date_time) AS maxToDate
         FROM crow
     """)
-    summaries = [dict(item) for item in cur][0]
-
-    cur.execute("""
-        SELECT
-            detected_animals,
-            COUNT(*) AS count
-        FROM crow
-        GROUP BY detected_animals
-    """)
-    counts_by_detected_animal = {item['detected_animals']: item['count'] for item in cur}
-
+    row = [dict(item) for item in cur][0]
     return {
-        'summary_stats': summaries,
-        'animal_counts': counts_by_detected_animal
+        'minFromDate': row['minfromdate'],
+        'maxToDate': row['maxtodate'],
+        'totalCount': row['totalcount'],
     }
 
 
-def get_image_info(s3_client, conn, num_rows=DEFAULT_API_ROW_COUNT, fetch_images=False):
+def get_ui_state(conn, min_date, max_date):
+    cur = conn.cursor(cursor_factory=DictCursor)
+    cur.execute("""
+        SELECT
+            COUNT(*) AS filteredCount
+        FROM crow
+        WHERE date_time >= %s
+            AND date_time <= %s
+    """, (min_date, max_date))
+    filtered_counts = {
+        'filteredCount': [dict(item) for item in cur][0]['filteredcount']
+    }
+
+    cur.execute("""
+        SELECT DISTINCT
+            detected_animals
+        FROM crow
+        WHERE date_time >= %s
+            AND date_time <= %s
+    """, (min_date, max_date))
+    detected_animals = [item['detected_animals'] for item in cur]
+
+    return {
+        **filtered_counts,
+        "filteredPests": detected_animals
+    }
+
+
+def get_pest_data(conn, min_date, max_date):
+    cur = conn.cursor(cursor_factory=DictCursor)
+
+    cur.execute("""
+        SELECT
+            DATE(date_time) AS date,
+            detected_animals,
+            date_time
+        FROM crow
+        WHERE date_time >= %s
+            AND date_time <= %s
+    """, (min_date, max_date))
+    date_animal_times = defaultdict(lambda: defaultdict(list))
+    for item in cur.fetchall():
+        date_animal_times[str(item['date'])][item['detected_animals']].append(str(item['date_time']))
+
+    return date_animal_times
+
+
+def get_image_info(s3_client, conn, min_date, max_date, num_rows=DEFAULT_API_ROW_COUNT, fetch_images=False):
     cur = conn.cursor()
 
     postgres_select_query = f"""
-    SELECT * FROM crow
+    SELECT
+        *
+    FROM crow
+    WHERE date_time >= %s
+        AND date_time <= %s
     ORDER BY rowid DESC
     LIMIT {num_rows}
     """
-    cur.execute(postgres_select_query)
+    cur.execute(postgres_select_query, (min_date, max_date))
 
     rows = [
         dict((cur.description[i][0], value) for i, value in enumerate(row))
@@ -181,16 +221,28 @@ def api_data():
 
     if request.method == 'GET':
         db_summary = get_summary_stats(conn)
+
+        min_date = request.args.get('fromDate', db_summary['minFromDate'])
+        max_date = request.args.get('toDate', db_summary['maxToDate'])
+
+        ui_state = {
+            **db_summary,
+            **get_ui_state(conn, min_date=min_date, max_date=max_date)
+        }
+        pest_data = get_pest_data(conn, min_date=min_date, max_date=max_date)
         images = get_image_info(
             s3_client,
             conn,
-            request.args.get('rows', DEFAULT_API_ROW_COUNT),
-            'fetch_images' in request.args
+            min_date=min_date,
+            max_date=max_date,
+            num_rows=request.args.get('rows', DEFAULT_API_ROW_COUNT),
+            fetch_images='fetch_images' in request.args
         )
 
         return jsonify({
-            **db_summary,
-            'images': images
+            'uiState': ui_state,
+            'pestData': pest_data,
+            'imageList': images
         })
     elif request.method == 'POST':
         payload = request.get_json(force=True)
