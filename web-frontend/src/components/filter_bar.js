@@ -15,7 +15,7 @@ export default ({ totalCount, loading, minFromDate, fromDate, toDate, setFromDat
   return (
     <nav className="level">
       <div className="level-left">
-        <p className="title is-4">Found {totalCount}</p>
+        <p className="title is-4 has-text-white">Found {totalCount} Pest Sightings</p>
       </div>
       <div className="level-right">
         <div className="level-item">

@@ -44,6 +44,9 @@ const Layout = ({ title, children }) => {
             {` `}
             <a href="https://www.gatsbyjs.org">Gatsby</a>
           </p>
+          <p>
+            Homepage photo credits to <a href="/photographer/pixelbox-31234">Wolf Friedmann</a> from <a href="https://freeimages.com/">FreeImages</a>
+          </p>
         </div>
       </footer>
     </>

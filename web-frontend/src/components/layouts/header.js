@@ -17,7 +17,7 @@ const Header = ({ siteTitle }) => {
   const [hamburgerExpanded, setHamburger] = useState(false);
 
   return <header>
-    <nav className="navbar" role="navigation" aria-label="main navigation">
+    <nav className="navbar is-primary" role="navigation" aria-label="main navigation">
       <div className="navbar-brand">
         <Link className="navbar-item" to="/">
           <figure className="image">

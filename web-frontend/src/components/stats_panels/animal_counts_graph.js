@@ -35,9 +35,9 @@ export default ({ supportedPests, pestColors, pestData, minDate, maxDate }) => {
   return (
     <ResponsiveContainer height={400} width="90%">
       <LineChart data={summarizedPestData}>
-        <XAxis dataKey="date" tickFormatter={(val) => moment(val).format("YYYY-MM-DD")}/>
+        <XAxis dataKey="date" tickFormatter={(val) => moment.unix(val).format("MMM DD")}/>
         <YAxis />
-        <Tooltip />
+        <Tooltip labelFormatter={(value) => moment.unix(value).format("MMM DD")} />
         {supportedPests.map((pest) => (
           <Line key={pest} dataKey={pest} fill={pestColors[pest]} />
         ))}

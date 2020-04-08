@@ -152,7 +152,7 @@ export default () => {
 
   return (
     <Layout title="Garden Report">
-      <section className="section">
+      <section className="section has-background-primary">
         {isError ?
           <div className="notification is-danger">
             <button className="delete" onClick={() => setIsError(false)}></button>
@@ -160,23 +160,24 @@ export default () => {
           </div>
           : ``
         }
-        <div className="box">
-          <FilterBar
-            totalCount={uiState.totalCount}
-            loading={loading}
-            minFromDate={uiState.minFromDate}
-            fromDate={fromDate}
-            toDate={toDate}
-            setLoading={setLoading}
-            setFromDate={setFromDate}
-            setToDate={setToDate}
-          />
-        </div>
+        <FilterBar
+          totalCount={uiState.totalCount}
+          filteredCount={uiState.filteredCount}
+          loading={loading}
+          minFromDate={uiState.minFromDate}
+          fromDate={fromDate}
+          toDate={toDate}
+          setLoading={setLoading}
+          setFromDate={setFromDate}
+          setToDate={setToDate}
+        />
+      </section>
+      <section className="section">
         <div className="columns">
           <div className="column is-half">
-            <div className="box">
-              <div className="select is-fullwidth">
-                <select defaultValue="PestTrendOverTime" onBlur={(e) => setSelectedGraph(e.target.value)}>
+            <div className="select is-fullwidth">
+              <div className="container">
+                <select defaultValue="PestTrendOverTime" onChange={(e) => setSelectedGraph(e.target.value)}>
                   <option value="PestTrendOverTime">Pests Trend over Time</option>
                   <option value="DailyBreakdown">Daily Breakdown</option>
                   <option value="PestSightings">Pest Sightings</option>
@@ -188,16 +189,20 @@ export default () => {
             </div>
           </div>
           <div className="column is-half">
-            <div className="box">
+            <section className="tile is-child">
               <PestTrendTable
                 supportedPests={SUPPORTED_PESTS}
                 pestData={pestData}
                 maxDate={toDate}
               />
-            </div>
+            </section>
           </div>
         </div>
-        <ImageList images={imageList} />
+      </section>
+      <section className="section">
+        <div className="container">
+          <ImageList images={imageList} />
+        </div>
       </section>
     </Layout>
   )

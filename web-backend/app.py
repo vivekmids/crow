@@ -65,7 +65,7 @@ def get_ui_state(conn, min_date, max_date):
             COUNT(*) AS filteredCount
         FROM crow
         WHERE date_time >= %s
-            AND date_time <= %s
+            AND date_time < DATEADD(DAY, 1, %s)
     """, (min_date, max_date))
     filtered_counts = {
         'filteredCount': [dict(item) for item in cur][0]['filteredcount']
@@ -76,7 +76,7 @@ def get_ui_state(conn, min_date, max_date):
             detected_animals
         FROM crow
         WHERE date_time >= %s
-            AND date_time <= %s
+            AND date_time < DATEADD(DAY, 1, %s)
     """, (min_date, max_date))
     detected_animals = [item['detected_animals'] for item in cur]
 
@@ -96,7 +96,7 @@ def get_pest_data(conn, min_date, max_date):
             date_time
         FROM crow
         WHERE date_time >= %s
-            AND date_time <= %s
+            AND date_time < DATEADD(DAY, 1, %s)
     """, (min_date, max_date))
     date_animal_times = defaultdict(lambda: defaultdict(list))
     for item in cur.fetchall():
@@ -113,7 +113,7 @@ def get_image_info(s3_client, conn, min_date, max_date, num_rows=DEFAULT_API_ROW
         *
     FROM crow
     WHERE date_time >= %s
-        AND date_time <= %s
+        AND date_time < DATEADD(DAY, 1, %s)
     ORDER BY rowid DESC
     LIMIT {num_rows}
     """
