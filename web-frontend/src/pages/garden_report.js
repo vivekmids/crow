@@ -156,7 +156,7 @@ export default () => {
         {isError ?
           <div className="notification is-danger">
             <button className="delete" onClick={() => setIsError(false)}></button>
-            Error refreshing, try again later!
+            Error fetching data, try again later!
           </div>
           : ``
         }

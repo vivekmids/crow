@@ -1,5 +1,5 @@
 import React from "react"
-import { Link, useStaticQuery } from "gatsby"
+import { Link, useStaticQuery, graphql } from "gatsby"
 import Img from "gatsby-image"
 
 import Layout from "../components/layouts/default-layout"
