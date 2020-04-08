@@ -137,7 +137,7 @@ export default () => {
   const [loading, setLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [fromDate, setFromDate] = useState(moment(DEFAULT_UI_STATE.minFromDate))
-  const [toDate, setToDate] = useState(moment())
+  const [toDate, setToDate] = useState(moment().startOf('day'))
   const [selectedGraph, setSelectedGraph] = useState("PestTrendOverTime")
 
   const [uiState, setUiState] = useState(DEFAULT_UI_STATE)
@@ -146,7 +146,7 @@ export default () => {
 
   useEffect(() => {
     if (loading) {
-        fetchAndUpdateState(setIsError, setLoading, uiState, setUiState, setPestData, setImageList, fromDate, toDate)
+      fetchAndUpdateState(setIsError, setLoading, uiState, setUiState, setPestData, setImageList, fromDate, toDate)
     }
   }, [isError, loading, uiState, pestData, imageList, fromDate, toDate])
 
@@ -175,17 +175,15 @@ export default () => {
       <section className="section">
         <div className="columns">
           <div className="column is-half">
-            <div className="select is-fullwidth">
-              <div className="container">
+            <div className="container">
+              <div className="select is-fullwidth">
                 <select defaultValue="PestTrendOverTime" onChange={(e) => setSelectedGraph(e.target.value)}>
                   <option value="PestTrendOverTime">Pests Trend over Time</option>
                   <option value="DailyBreakdown">Daily Breakdown</option>
                   <option value="PestSightings">Pest Sightings</option>
                 </select>
               </div>
-              <div className="container">
-                {displyGraph(selectedGraph, pestData, fromDate, toDate)}
-              </div>
+              {displyGraph(selectedGraph, pestData, fromDate, toDate)}
             </div>
           </div>
           <div className="column is-half">
@@ -198,8 +196,6 @@ export default () => {
             </section>
           </div>
         </div>
-      </section>
-      <section className="section">
         <div className="container">
           <ImageList images={imageList} />
         </div>

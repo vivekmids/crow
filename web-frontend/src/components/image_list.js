@@ -12,7 +12,10 @@ function parseSoundUsed(fileName) {
 function chunked(arr, chunk_size) {
   let chunked = []
   for (let i = 0; i < arr.length; i += chunk_size) {
-    chunked.push(arr.slice(i, i + chunk_size))
+    chunked.push({
+      key: `chunk${i}`,
+      images: arr.slice(i, i + chunk_size)
+    })
   }
   return chunked
 }
@@ -72,8 +75,8 @@ const ImageCard = ({
 export default ({ images }) => {
   return (
     <div className="container">
-      {chunked(images, 2).map(images => (
-        <div className="columns">
+      {chunked(images, 2).map(({ key, images}) => (
+        <div key={key} className="columns">
           {images.map((image) => <ImageCard key={image.rowid} {...image} />)}
         </div>
       ))}

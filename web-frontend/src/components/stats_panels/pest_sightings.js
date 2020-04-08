@@ -37,7 +37,7 @@ export default ({ supportedPests, pestColors, pestData, minDate, maxDate }) => {
         <CartesianGrid />
         <XAxis domain={['dataMin - 10000', 'dataMax + 10000']} type="number" dataKey="x" name="date"
           tickFormatter={(val) => moment.unix(val).format("MMM DD")} />
-        <YAxis label="hour" type="number" dataKey="y" name="hour" label={{ value: "hour", angle:-90 }} />
+        <YAxis type="number" dataKey="y" name="hour" label={{ value: "hour", angle:-90 }} />
         <Tooltip formatter={(value, name) => {
           if (name === 'date') {
             return moment.unix(value).format("MMM DD")
