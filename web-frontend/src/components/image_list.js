@@ -45,7 +45,7 @@ const ImageCard = ({
               Detected: <em>{detected_animals}</em><br />
               Deterrent Used: {deterrent_type}<br />
               Device: {device_id} -- {cam_id}<br />
-              Date: {moment(date_time).format("YYYY-MM-DD HH:MM")}<br />
+              Date: {moment(date_time).format("YYYY-MM-DD HH:mm")}<br />
               { deterrent_type === 'sound'
               ? `Sound Used: ${parseSoundUsed(soundfile_name)}`
               : ``}

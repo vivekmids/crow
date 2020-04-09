@@ -133,7 +133,7 @@ def get_image_info(s3_client, conn, min_date, max_date, tz, num_rows=DEFAULT_API
     rows = [
         {
             **row,
-            'date_time': pytz.timezone(tz).localize(row['date_time']).isoformat(),
+            'date_time': pytz.timezone(tz).localize(row['date_time']).isoformat(' '),
         }
         for row in cur
     ]
