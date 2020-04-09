@@ -10,6 +10,7 @@ from collections import defaultdict
 import numpy as np
 import boto3
 import psycopg2
+import pytz
 from psycopg2.extras import DictCursor
 from flask import Flask, request, jsonify
 from PIL import Image
@@ -106,14 +107,14 @@ def get_pest_data(conn, min_date, max_date, tz):
 
 
 def get_image_info(s3_client, conn, min_date, max_date, tz, num_rows=DEFAULT_API_ROW_COUNT, fetch_images=False):
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=DictCursor)
 
     postgres_select_query = f"""
     SELECT
         rowid,
         device_id,
         cam_id,
-        date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}',
+        date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}' AS date_time,
         detected_animals,
         deterrent_type,
         soundfile_name,
@@ -130,8 +131,11 @@ def get_image_info(s3_client, conn, min_date, max_date, tz, num_rows=DEFAULT_API
     cur.execute(postgres_select_query, (min_date, max_date))
 
     rows = [
-        dict((cur.description[i][0], value) for i, value in enumerate(row))
-        for row in cur.fetchall()
+        {
+            **row,
+            'date_time': pytz.timezone(tz).localize(row['date_time']).isoformat(),
+        }
+        for row in cur
     ]
     cur.close()
 
