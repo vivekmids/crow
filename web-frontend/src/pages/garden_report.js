@@ -7,7 +7,7 @@ import PestTrendTable from "../components/stats_panels/pest_trend_table"
 import AnimalCountGraph from "../components/stats_panels/animal_counts_graph"
 import DailyBreakdownGraph from "../components/stats_panels/daily_breakdown_graph"
 import PestSightings from "../components/stats_panels/pest_sightings"
-import moment from "moment"
+import moment from "moment-timezone"
 
 
 const DATE_FORMAT = "D MMM YYYY"
@@ -74,8 +74,9 @@ function fetchAndUpdateState(setIsError, setLoading, uiState, setUiState, setPes
 
   let fromDateString = moment(fromDate).format("DD MMM YYYY")
   let toDateString = moment(toDate).format("DD MMM YYYY")
+  let tz = moment.tz.guess()
 
-  fetch(`/api/inferences?fetch_images=true&fromDate=${fromDateString}&toDate=${toDateString}`)
+  fetch(`/api/inferences?fetch_images=true&fromDate=${fromDateString}&toDate=${toDateString}&tz=${tz}`)
     .then(response => response.json())
     .then(resultData => {
       // some elements of the ui state needs to persist, so we remember to update it
