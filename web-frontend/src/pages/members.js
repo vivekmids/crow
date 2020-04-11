@@ -27,7 +27,7 @@ const MemberCard = ({ name, role, linkedInUsername, githubUsername, children }) 
           {children}
         </figure>
       </div>
-      <div className="card-content">
+      <div className="card-content has-text-centered">
         <p className="title is-4">{name}</p>
         <p className="title is-6">{role}</p>
       </div>

@@ -2,4 +2,5 @@ flask
 boto3
 pillow
 psycopg2
+pytz
 numpy
