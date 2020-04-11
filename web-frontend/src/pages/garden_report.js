@@ -11,6 +11,8 @@ import moment from "moment-timezone"
 
 
 const DATE_FORMAT = "D MMM YYYY"
+const DEFAULT_START_DATE = "2020-03-24"
+const DEFAULT_END_DATE = "2020-03-30"
 const SUPPORTED_PESTS = [
   'rodent',
   'squirrel',
@@ -36,7 +38,7 @@ const PEST_COLORS = {
 
 
 const DEFAULT_UI_STATE = {
-  minFromDate: moment().subtract(7, "days").format(DATE_FORMAT),
+  minFromDate: moment(DEFAULT_START_DATE, "YYYY-MM-DD").startOf('day').format(DATE_FORMAT),
   totalCount: 0,
 
   filteredCount: 0,
@@ -137,8 +139,8 @@ export default () => {
 
   const [loading, setLoading] = useState(true)
   const [isError, setIsError] = useState(false)
-  const [fromDate, setFromDate] = useState(moment(DEFAULT_UI_STATE.minFromDate))
-  const [toDate, setToDate] = useState(moment().startOf('day'))
+  const [fromDate, setFromDate] = useState(moment(DEFAULT_START_DATE, "YYYY-MM-DD").startOf('day'))
+  const [toDate, setToDate] = useState(moment(DEFAULT_END_DATE, "YYYY-MM-DD").startOf('day'))
   const [selectedGraph, setSelectedGraph] = useState("PestTrendOverTime")
 
   const [uiState, setUiState] = useState(DEFAULT_UI_STATE)
