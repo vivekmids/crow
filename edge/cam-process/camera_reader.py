@@ -62,6 +62,7 @@ def main():
                 logging.info("Motion detected on " + str(cam_id));
                 try:
                     frame = cv2.resize(frame2, (299, 299))
+                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     frame = frame.reshape(1, 299, 299, 3)
                     resp = requests.post(EDGE_MASTER_SERVICE, json={
                         'cam_id': cam_id,
@@ -79,7 +80,9 @@ def main():
                     break
             
             frame1 = frame2
+            cap.read()
             _, frame2 = cap.read()
+            cap.read()
             
     else:
         logging.error("Failed to open capture camera: %d", cam_id)

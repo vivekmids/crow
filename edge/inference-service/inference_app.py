@@ -29,7 +29,7 @@ def perform_inference():
 
 
 def main():
-    app.run('0.0.0.0', port=5050, threaded=False, processes=3)
+    app.run('0.0.0.0', port=5050, threaded=False, processes=6)
 
 
 if __name__ == '__main__':
