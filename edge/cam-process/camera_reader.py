@@ -12,6 +12,7 @@ logging.getLogger().setLevel(logging.INFO)
 
 EDGE_MASTER_SERVICE = 'http://localhost:5000/process-image'
 DEBUG = False
+SKIP = 5 #Number of frames to skip between 2 frames processed. 
 
 def distMap(frame1, frame2):
     """outputs distance between two frames"""
@@ -55,6 +56,8 @@ def main():
 
 
     if cap.isOpened():
+        cap.read()
+        cap.read()
         _, frame1 = cap.read()
         _, frame2 = cap.read()
         while True:
@@ -80,9 +83,11 @@ def main():
                     break
             
             frame1 = frame2
-            cap.read()
+            for _ in range(SKIP):
+                cap.read()
             _, frame2 = cap.read()
-            cap.read()
+            for _ in range(SKIP):
+                cap.read()
             
     else:
         logging.error("Failed to open capture camera: %d", cam_id)
