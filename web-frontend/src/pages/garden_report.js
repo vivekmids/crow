@@ -7,10 +7,12 @@ import PestTrendTable from "../components/stats_panels/pest_trend_table"
 import AnimalCountGraph from "../components/stats_panels/animal_counts_graph"
 import DailyBreakdownGraph from "../components/stats_panels/daily_breakdown_graph"
 import PestSightings from "../components/stats_panels/pest_sightings"
-import moment from "moment"
+import moment from "moment-timezone"
 
 
 const DATE_FORMAT = "D MMM YYYY"
+const DEFAULT_START_DATE = "2020-03-24"
+const DEFAULT_END_DATE = "2020-03-30"
 const SUPPORTED_PESTS = [
   'rodent',
   'squirrel',
@@ -36,7 +38,7 @@ const PEST_COLORS = {
 
 
 const DEFAULT_UI_STATE = {
-  minFromDate: moment().subtract(7, "days").format(DATE_FORMAT),
+  minFromDate: moment(DEFAULT_START_DATE, "YYYY-MM-DD").startOf('day').format(DATE_FORMAT),
   totalCount: 0,
 
   filteredCount: 0,
@@ -74,8 +76,9 @@ function fetchAndUpdateState(setIsError, setLoading, uiState, setUiState, setPes
 
   let fromDateString = moment(fromDate).format("DD MMM YYYY")
   let toDateString = moment(toDate).format("DD MMM YYYY")
+  let tz = moment.tz.guess()
 
-  fetch(`/api/inferences?fetch_images=true&fromDate=${fromDateString}&toDate=${toDateString}`)
+  fetch(`/api/inferences?fetch_images=true&fromDate=${fromDateString}&toDate=${toDateString}&tz=${tz}`)
     .then(response => response.json())
     .then(resultData => {
       // some elements of the ui state needs to persist, so we remember to update it
@@ -136,8 +139,8 @@ export default () => {
 
   const [loading, setLoading] = useState(true)
   const [isError, setIsError] = useState(false)
-  const [fromDate, setFromDate] = useState(moment(DEFAULT_UI_STATE.minFromDate))
-  const [toDate, setToDate] = useState(moment())
+  const [fromDate, setFromDate] = useState(moment(DEFAULT_START_DATE, "YYYY-MM-DD").startOf('day'))
+  const [toDate, setToDate] = useState(moment(DEFAULT_END_DATE, "YYYY-MM-DD").startOf('day'))
   const [selectedGraph, setSelectedGraph] = useState("PestTrendOverTime")
 
   const [uiState, setUiState] = useState(DEFAULT_UI_STATE)
@@ -146,58 +149,59 @@ export default () => {
 
   useEffect(() => {
     if (loading) {
-        fetchAndUpdateState(setIsError, setLoading, uiState, setUiState, setPestData, setImageList, fromDate, toDate)
+      fetchAndUpdateState(setIsError, setLoading, uiState, setUiState, setPestData, setImageList, fromDate, toDate)
     }
   }, [isError, loading, uiState, pestData, imageList, fromDate, toDate])
 
   return (
     <Layout title="Garden Report">
-      <section className="section">
+      <section className="section has-background-primary">
         {isError ?
           <div className="notification is-danger">
             <button className="delete" onClick={() => setIsError(false)}></button>
-            Error refreshing, try again later!
+            Error fetching data, try again later!
           </div>
           : ``
         }
-        <div className="box">
-          <FilterBar
-            totalCount={uiState.totalCount}
-            loading={loading}
-            minFromDate={uiState.minFromDate}
-            fromDate={fromDate}
-            toDate={toDate}
-            setLoading={setLoading}
-            setFromDate={setFromDate}
-            setToDate={setToDate}
-          />
-        </div>
+        <FilterBar
+          totalCount={uiState.totalCount}
+          filteredCount={uiState.filteredCount}
+          loading={loading}
+          minFromDate={uiState.minFromDate}
+          fromDate={fromDate}
+          toDate={toDate}
+          setLoading={setLoading}
+          setFromDate={setFromDate}
+          setToDate={setToDate}
+        />
+      </section>
+      <section className="section">
         <div className="columns">
           <div className="column is-half">
-            <div className="box">
+            <div className="container">
               <div className="select is-fullwidth">
-                <select defaultValue="PestTrendOverTime" onBlur={(e) => setSelectedGraph(e.target.value)}>
+                <select defaultValue="PestTrendOverTime" onChange={(e) => setSelectedGraph(e.target.value)}>
                   <option value="PestTrendOverTime">Pests Trend over Time</option>
                   <option value="DailyBreakdown">Daily Breakdown</option>
                   <option value="PestSightings">Pest Sightings</option>
                 </select>
               </div>
-              <div className="container">
-                {displyGraph(selectedGraph, pestData, fromDate, toDate)}
-              </div>
+              {displyGraph(selectedGraph, pestData, fromDate, toDate)}
             </div>
           </div>
           <div className="column is-half">
-            <div className="box">
+            <section className="tile is-child">
               <PestTrendTable
                 supportedPests={SUPPORTED_PESTS}
                 pestData={pestData}
                 maxDate={toDate}
               />
-            </div>
+            </section>
           </div>
         </div>
-        <ImageList images={imageList} />
+        <div className="container">
+          <ImageList images={imageList} />
+        </div>
       </section>
     </Layout>
   )

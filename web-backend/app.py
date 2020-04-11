@@ -10,6 +10,7 @@ from collections import defaultdict
 import numpy as np
 import boto3
 import psycopg2
+import pytz
 from psycopg2.extras import DictCursor
 from flask import Flask, request, jsonify
 from PIL import Image
@@ -39,15 +40,15 @@ def rand_str_generator(size, chars=string.ascii_letters):
     return ''.join(random.choice(chars) for _ in range(size))
 
 
-def get_summary_stats(conn):
+def get_summary_stats(conn, tz):
     """Here we should return a list of images the customer has already seen
     """
     cur = conn.cursor(cursor_factory=DictCursor)
-    cur.execute("""
+    cur.execute(f"""
         SELECT
             COUNT(*) AS totalCount,
-            MIN(date_time) AS minFromDate,
-            MAX(date_time) AS maxToDate
+            MIN(date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}') AS minFromDate,
+            MAX(date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}') AS maxToDate
         FROM crow
     """)
     row = [dict(item) for item in cur][0]
@@ -58,25 +59,25 @@ def get_summary_stats(conn):
     }
 
 
-def get_ui_state(conn, min_date, max_date):
+def get_ui_state(conn, min_date, max_date, tz):
     cur = conn.cursor(cursor_factory=DictCursor)
-    cur.execute("""
+    cur.execute(f"""
         SELECT
             COUNT(*) AS filteredCount
         FROM crow
-        WHERE date_time >= %s
-            AND date_time <= %s
+        WHERE DATE(date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}') >= %s
+            AND DATE(date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}') <= %s
     """, (min_date, max_date))
     filtered_counts = {
         'filteredCount': [dict(item) for item in cur][0]['filteredcount']
     }
 
-    cur.execute("""
+    cur.execute(f"""
         SELECT DISTINCT
             detected_animals
         FROM crow
-        WHERE date_time >= %s
-            AND date_time <= %s
+        WHERE DATE(date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}') >= %s
+            AND DATE(date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}') <= %s
     """, (min_date, max_date))
     detected_animals = [item['detected_animals'] for item in cur]
 
@@ -86,17 +87,17 @@ def get_ui_state(conn, min_date, max_date):
     }
 
 
-def get_pest_data(conn, min_date, max_date):
+def get_pest_data(conn, min_date, max_date, tz):
     cur = conn.cursor(cursor_factory=DictCursor)
 
-    cur.execute("""
+    cur.execute(f"""
         SELECT
-            DATE(date_time) AS date,
+            DATE(date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}') AS date,
             detected_animals,
-            date_time
+            date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}' AS date_time
         FROM crow
-        WHERE date_time >= %s
-            AND date_time <= %s
+        WHERE DATE(date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}') >= %s
+            AND DATE(date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}') <= %s
     """, (min_date, max_date))
     date_animal_times = defaultdict(lambda: defaultdict(list))
     for item in cur.fetchall():
@@ -105,23 +106,36 @@ def get_pest_data(conn, min_date, max_date):
     return date_animal_times
 
 
-def get_image_info(s3_client, conn, min_date, max_date, num_rows=DEFAULT_API_ROW_COUNT, fetch_images=False):
-    cur = conn.cursor()
+def get_image_info(s3_client, conn, min_date, max_date, tz, num_rows=DEFAULT_API_ROW_COUNT, fetch_images=False):
+    cur = conn.cursor(cursor_factory=DictCursor)
 
     postgres_select_query = f"""
     SELECT
-        *
+        rowid,
+        device_id,
+        cam_id,
+        date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}' AS date_time,
+        detected_animals,
+        deterrent_type,
+        soundfile_name,
+        key_name,
+        bucket_name,
+        updated,
+        found_something
     FROM crow
-    WHERE date_time >= %s
-        AND date_time <= %s
+    WHERE DATE(date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}') >= %s
+        AND DATE(date_time AT TIME ZONE 'UTC' AT TIME ZONE '{tz}') <= %s
     ORDER BY rowid DESC
     LIMIT {num_rows}
     """
     cur.execute(postgres_select_query, (min_date, max_date))
 
     rows = [
-        dict((cur.description[i][0], value) for i, value in enumerate(row))
-        for row in cur.fetchall()
+        {
+            **row,
+            'date_time': pytz.timezone(tz).localize(row['date_time']).isoformat(' '),
+        }
+        for row in cur
     ]
     cur.close()
 
@@ -220,21 +234,23 @@ def api_data():
     conn = get_conn()
 
     if request.method == 'GET':
-        db_summary = get_summary_stats(conn)
+        tz = request.args.get('tz', 'America/New_York')
+        db_summary = get_summary_stats(conn, tz=tz)
 
         min_date = request.args.get('fromDate', db_summary['minFromDate'])
         max_date = request.args.get('toDate', db_summary['maxToDate'])
 
         ui_state = {
             **db_summary,
-            **get_ui_state(conn, min_date=min_date, max_date=max_date)
+            **get_ui_state(conn, min_date=min_date, max_date=max_date, tz=tz)
         }
-        pest_data = get_pest_data(conn, min_date=min_date, max_date=max_date)
+        pest_data = get_pest_data(conn, min_date=min_date, max_date=max_date, tz=tz)
         images = get_image_info(
             s3_client,
             conn,
             min_date=min_date,
             max_date=max_date,
+            tz=tz,
             num_rows=request.args.get('rows', DEFAULT_API_ROW_COUNT),
             fetch_images='fetch_images' in request.args
         )

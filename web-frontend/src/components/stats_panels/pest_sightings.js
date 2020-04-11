@@ -24,8 +24,6 @@ export default ({ supportedPests, pestColors, pestData, minDate, maxDate }) => {
           groupedPestData[pest].push({
             x: moment(date).unix(),
             y: moment(occurance).get("hour") + (moment(occurance).get("minute") / 60),
-            date: moment(date).format("YYYY-MM-DD"),
-            time: moment(date).format("HH:MM")
           })
         }
       }
@@ -38,9 +36,15 @@ export default ({ supportedPests, pestColors, pestData, minDate, maxDate }) => {
       <ScatterChart>
         <CartesianGrid />
         <XAxis domain={['dataMin - 10000', 'dataMax + 10000']} type="number" dataKey="x" name="date"
-          tickFormatter={(val) => moment(val).format("YYYY-MM-DD")} />
-        <YAxis type="number" dataKey="y" name="hour" />
-        <Tooltip />
+          tickFormatter={(val) => moment.unix(val).format("MMM DD")} />
+        <YAxis type="number" dataKey="y" name="hour" label={{ value: "hour", angle:-90 }} />
+        <Tooltip formatter={(value, name) => {
+          if (name === 'date') {
+            return moment.unix(value).format("MMM DD")
+          } else {
+            return `${Math.floor(value)}:${(value * 60) % 60}`
+          }
+        }} />
         {supportedPests.map((pest) => (
           <Scatter key={pest} name={pest} fill={pestColors[pest]} data={groupedPestData[pest]} />
         ))}

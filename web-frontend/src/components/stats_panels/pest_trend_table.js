@@ -22,7 +22,7 @@ export default ({ pestData, maxDate, supportedPests }) => {
       }
     }
 
-    if (moment(date) === lastDate) {
+    if (moment(date).isSame(lastDate)) {
       for (let pest of supportedPests) {
         if (payload[pest]) {
           pestTrend[pest] += payload[pest].length
@@ -30,9 +30,9 @@ export default ({ pestData, maxDate, supportedPests }) => {
       }
     }
 
-    if (moment(date) === secondToLastDate) {
+    if (moment(date).isSame(secondToLastDate)) {
       for (let pest of supportedPests) {
-        if (payload.hasOwnProperty(pest)) {
+        if (payload[pest]) {
           pestTrend[pest] -= payload[pest].length
         }
       }
@@ -52,18 +52,23 @@ export default ({ pestData, maxDate, supportedPests }) => {
         </tr>
       </thead>
       <tbody>
-        {sortedPests.map((pest) => (
-          <tr key={pest}>
-            <td>{pest}</td>
-            <td>{pestCounts[pest] === 0 ? '-' : pestCounts[pest]}</td>
-            <td>
-              {pestTrend[pest] > 0 ? `▲` : '' }
-              {pestTrend[pest] < 0 ? `▼` : '' }
-              {` `}
-              {pestTrend[pest] === 0 ? '-' : pestTrend[pest]}
-            </td>
-          </tr>
-        ))}
+        {sortedPests.map((pest) => {
+          const isPositiveTrend = pestTrend[pest] > 0
+          const isNegativeTrend = pestTrend[pest] < 0
+
+          return (
+            <tr key={pest}>
+              <td>{pest}</td>
+              <td>{pestCounts[pest] === 0 ? '-' : pestCounts[pest]}</td>
+              <td className={ isPositiveTrend ? `has-text-danger` : `has-text-success`}>
+                {isPositiveTrend ? `▲` : '' }
+                {isNegativeTrend ? `▼` : '' }
+                {` `}
+                {pestTrend[pest] === 0 ? '-' : pestTrend[pest]}
+              </td>
+            </tr>
+          )
+        })}
       </tbody>
     </table>
   )
