@@ -1,4 +1,6 @@
 import tensorflow as tf
+import logging
+import time
 
 class StupidModel(object):
     def __call__(self, image):
@@ -8,9 +10,12 @@ class StupidModel(object):
 def load_model():
     """Here lies logic to load the model"""
     # load model from h5 file
-    
+    logging.warning('Starting load model')
+    start = time.perf_counter()
     model = tf.lite.Interpreter(model_path="model/converted_quant_model.tflite")
     model.allocate_tensors()
+    end = time.perf_counter()
+    logging.warning(f'Model loaded in {end-start} seconds')
 #    input_details = model.get_input_details()
 #    output_details = model.get_output_details()
     
@@ -46,6 +51,8 @@ def infer(model, image):
     
     predicted_id = model.get_tensor(0)
     predicted_name = classes_dict_lookup[predicted_id.argmax()]
+    
+    logging.warning('Probability of top class is '+ str(predicted_id.max()))
     
     if predicted_name in classes:
         return True, predicted_name
