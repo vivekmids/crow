@@ -24,7 +24,7 @@ export default ({ totalCount, loading, minFromDate, fromDate, toDate, setFromDat
               <button className="button is-static">From</button>
             </p>
             <p className="control">
-              <input className="input" type="date" min={minFromDateString} max={toDateString} value={fromDateString}
+              <input className="input" type="date" min={minFromDateString} value={fromDateString}
                 onChange={(e) => {
                   setFromDate(moment(e.target.value))
                   setLoading(true)

@@ -4,9 +4,9 @@ import Layout from "../components/layouts/default-layout"
 import FilterBar from "../components/filter_bar"
 import ImageList from '../components/image_list'
 import PestTrendTable from "../components/stats_panels/pest_trend_table"
-import AnimalCountGraph from "../components/stats_panels/animal_counts_graph"
+import PestSightingsGraph from "../components/stats_panels/pest_sightings_graph"
 import DailyBreakdownGraph from "../components/stats_panels/daily_breakdown_graph"
-import PestSightings from "../components/stats_panels/pest_sightings"
+import HourlyBreakdownGraph from "../components/stats_panels/hourly_breakdown_graph"
 import moment from "moment-timezone"
 
 
@@ -72,6 +72,10 @@ function fixUpPestData(pestData, fromDate, toDate) {
 
 
 function fetchAndUpdateState(setIsError, setLoading, uiState, setUiState, setPestData, setImageList, fromDate, toDate) {
+  if (fromDate > toDate) {
+    return
+  }
+
   setIsError(false)
 
   let fromDateString = moment(fromDate).format("DD MMM YYYY")
@@ -103,8 +107,8 @@ function fetchAndUpdateState(setIsError, setLoading, uiState, setUiState, setPes
 }
 
 function displyGraph(selectedGraph, pestData, fromDate, toDate) {
-  if (selectedGraph === "PestTrendOverTime") {
-    return <AnimalCountGraph
+  if (selectedGraph === "PestSightings") {
+    return <PestSightingsGraph
       key={selectedGraph}
       supportedPests={SUPPORTED_PESTS}
       pestColors={PEST_COLORS}
@@ -121,8 +125,8 @@ function displyGraph(selectedGraph, pestData, fromDate, toDate) {
       minDate={fromDate}
       maxDate={toDate}
     />
-  } else if (selectedGraph === "PestSightings") {
-    return <PestSightings
+  } else if (selectedGraph === "HourlyBreakdown") {
+    return <HourlyBreakdownGraph
       key={selectedGraph}
       supportedPests={SUPPORTED_PESTS}
       pestColors={PEST_COLORS}
@@ -131,7 +135,7 @@ function displyGraph(selectedGraph, pestData, fromDate, toDate) {
       maxDate={toDate}
     />
   } else {
-    return ``
+    throw Error(`Unable to find graph type: ${selectedGraph}`)
   }
 }
 
@@ -141,7 +145,7 @@ export default () => {
   const [isError, setIsError] = useState(false)
   const [fromDate, setFromDate] = useState(moment(DEFAULT_START_DATE, "YYYY-MM-DD").startOf('day'))
   const [toDate, setToDate] = useState(moment(DEFAULT_END_DATE, "YYYY-MM-DD").startOf('day'))
-  const [selectedGraph, setSelectedGraph] = useState("PestTrendOverTime")
+  const [selectedGraph, setSelectedGraph] = useState("PestSightings")
 
   const [uiState, setUiState] = useState(DEFAULT_UI_STATE)
   const [pestData, setPestData] = useState({})
@@ -180,10 +184,10 @@ export default () => {
           <div className="column is-half">
             <div className="container">
               <div className="select is-fullwidth">
-                <select defaultValue="PestTrendOverTime" onChange={(e) => setSelectedGraph(e.target.value)}>
-                  <option value="PestTrendOverTime">Pests Trend over Time</option>
-                  <option value="DailyBreakdown">Daily Breakdown</option>
+                <select defaultValue="PestSightings" onChange={(e) => setSelectedGraph(e.target.value)}>
                   <option value="PestSightings">Pest Sightings</option>
+                  <option value="DailyBreakdown">Daily Breakdown</option>
+                  <option value="HourlyBreakdown">Hourly Breakdown</option>
                 </select>
               </div>
               {displyGraph(selectedGraph, pestData, fromDate, toDate)}
