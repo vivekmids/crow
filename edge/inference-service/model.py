@@ -12,7 +12,7 @@ def load_model():
     # load model from h5 file
     logging.warning('Starting load model')
     start = time.perf_counter()
-    model = tf.lite.Interpreter(model_path="model/converted_quant_model.tflite")
+    model = tf.lite.Interpreter(model_path="model/converted_quant_model_v2.tflite")
     model.allocate_tensors()
     end = time.perf_counter()
     logging.warning(f'Model loaded in {end-start} seconds')
@@ -42,19 +42,21 @@ def infer(model, image):
         - name of identified animals
     """
     
-    classes = ['skunk','fox','rodent','dog','squirrel','cat','rabbit','bird','cow','bobcat','deer','raccoon','coyote','opossum']
-    classes_dict_lookup = dict(zip(range(15), classes+['other']))
-    
+    #classes = ['skunk','fox','rodent','dog','squirrel','cat','rabbit','bird','cow','bobcat','deer','raccoon','coyote','opossum']
+    #classes_dict_lookup = dict(zip(range(15), classes+['other']))
+    with open('edge/inference-service/prediction_map.pickle', 'rb') as f:
+        prediction_map = pickle.load(f)
+
     # run inference
     model.set_tensor(1, image)
     model.invoke()
     
     predicted_id = model.get_tensor(0)
-    predicted_name = classes_dict_lookup[predicted_id.argmax()]
+    predicted_name = prediction_map[predicted_id.argmax()]
     
     logging.warning('Probability of top class is '+ str(predicted_id.max()))
     
-    if predicted_name in classes:
+    if predicted_name != 'empty':
         return True, predicted_name
     else:
         return False, None
