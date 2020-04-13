@@ -19,6 +19,9 @@ services:
           location /api {
               proxy_pass http://web-backend:8000/api;
           }
+          location /simulator {
+              proxy_pass http://edge-simulator:5000/simulator;
+          }
       "
 
   edge:
@@ -31,3 +34,15 @@ services:
       - "./edge:/app"
     devices:
      - /dev/video0:/dev/video0
+
+  edge-simulator:
+    build:
+      context: edge/
+      dockerfile: Dockerfile.simulator
+    ports:
+      - "5000:5000"  # edge-master
+      - "5050:5050"  # inference-service
+      - "5100:5100"  # deterrent-service
+    volumes:
+      - "./edge:/app"
+      - "./web-frontend/assets/images/sample_pests:/app/web-frontend/assets/images/sample_pests"

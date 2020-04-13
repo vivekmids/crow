@@ -61,3 +61,16 @@ def start_deterrent_service():
     def kill_inference_app():
         proc.terminate()
         proc.wait()
+
+
+def start_deterrent_simulator_service():
+    """Starts the deterrent service that runs locally on the edge device"""
+    proc = subprocess.Popen([
+        'python',
+        'deterrent-simulator-service/deterrent_simulator_app.py'
+    ])
+
+    @atexit.register
+    def kill_inference_app():
+        proc.terminate()
+        proc.wait()

@@ -73,6 +73,7 @@ function fixUpPestData(pestData, fromDate, toDate) {
 
 function fetchAndUpdateState(setIsError, setLoading, uiState, setUiState, setPestData, setImageList, fromDate, toDate) {
   if (fromDate > toDate) {
+    setLoading(false)
     return
   }
 
@@ -155,7 +156,7 @@ export default () => {
     if (loading) {
       fetchAndUpdateState(setIsError, setLoading, uiState, setUiState, setPestData, setImageList, fromDate, toDate)
     }
-  }, [isError, loading, uiState, pestData, imageList, fromDate, toDate])
+  }, [loading, uiState, fromDate, toDate])
 
   return (
     <Layout title="Garden Report">

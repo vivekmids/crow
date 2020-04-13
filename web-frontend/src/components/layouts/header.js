@@ -47,6 +47,9 @@ const Header = ({ siteTitle }) => {
           <Link className="navbar-item" activeClassName="is-active" to="/garden_report/">
             Garden Report
           </Link>
+          <Link className="navbar-item" activeClassName="is-active" to="/device_simulator/">
+            Device Simulator <span class="tag is-rounded">beta</span>
+          </Link>
         </div>
       </div>
 

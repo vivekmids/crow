@@ -33,8 +33,14 @@ module.exports = {
     // To learn more, visit: https://gatsby.dev/offline
     // `gatsby-plugin-offline`,
   ],
-  proxy: {
-    prefix: "/api",
-    url: "http://169.63.11.147:8000"
-  }
+  proxy: [
+    {
+      prefix: "/api",
+      url: "http://169.63.11.147:8000"
+    },
+    {
+      prefix: "/simulator",
+      url: "http://169.63.11.147:5000"
+    }
+  ]
 }
