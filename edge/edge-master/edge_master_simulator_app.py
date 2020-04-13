@@ -29,7 +29,7 @@ SAMPLE_PESTS_PATH = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 app = Flask(__name__)
 
 
-@app.route('/simulator/process-image', methods=['GET'])
+@app.route('/simulator/process-image/', methods=['GET'])
 def update_status():
     inference_response = None
     deterrent_response = None
