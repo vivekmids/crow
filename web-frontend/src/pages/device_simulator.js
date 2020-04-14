@@ -131,32 +131,21 @@ export default ({ data }) => {
                 </div>
               </div>
             </div>
-            <div className="tile is-vertical is-4">
-              <div className="tile is-parent is-vertical">
-                {data.allFile.nodes.slice(0, 2).map((node) => (
-                  <ImageTile
-                    key={node.name}
-                    node={node}
-                    selectedImage={selectedImage}
-                    setSelectedImage={setSelectedImage}
-                    setLoading={setLoading}
-                  />
-                ))}
+            {[0, 4, 8, 12].map((start_index) => (
+              <div key={`starting-index-${start_index}`} className="tile is-vertical is-2">
+                <div className="tile is-parent is-vertical">
+                  {data.allFile.nodes.slice(start_index, start_index + 4).map((node) => (
+                    <ImageTile
+                      key={node.name}
+                      node={node}
+                      selectedImage={selectedImage}
+                      setSelectedImage={setSelectedImage}
+                      setLoading={setLoading}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="tile is-vertical is-4">
-              <div className="tile is-parent is-vertical">
-                {data.allFile.nodes.slice(2).map((node) => (
-                  <ImageTile
-                    key={node.name}
-                    node={node}
-                    selectedImage={selectedImage}
-                    setSelectedImage={setSelectedImage}
-                    setLoading={setLoading}
-                  />
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>

@@ -54,7 +54,7 @@ def update_status():
     else:
         inference_response = resp.json()
 
-    if inference_response and inference_response['found_something']:
+    if inference_response and inference_response['found_something'] and inference_response['detected_animals'] != 'other':
         # Step 3 - deploy a deterrent maybe
         resp = requests.post(DETERRENT_SERVICE, json={
             'detected_animals': inference_response['detected_animals'],
