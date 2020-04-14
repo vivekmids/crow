@@ -15,13 +15,9 @@ export default ({ totalCount, filteredCount, loading, minFromDate, fromDate, toD
   return (
     <nav className="level">
       <div className="level-left">
-        <p className="title is-4 has-text-white">{
-          totalCount !== filteredCount
-          ? `${filteredCount} Pest Sightings (${totalCount} Total)`
-          : `${totalCount} Pest Sightings`
-        }
+        <p className="title is-4 has-text-white">
+          {filteredCount} Pest Sightings ({totalCount} Total)
         </p>
-
       </div>
       <div className="level-right">
         <div className="level-item">
