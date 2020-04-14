@@ -1,10 +1,10 @@
 import pickle
 from flask import Flask, jsonify, request
-from model import infer, load_model
+from model2 import infer, load_model
 import numpy as np
 
 app = Flask(__name__)
-app.model, input_index, output_index, prediction_map = load_model()
+app.model = load_model()
 
 
 @app.route('/', methods=['POST'])
@@ -16,11 +16,11 @@ def perform_inference():
     """
     data = request.get_json(force=True)
     image = pickle.loads(data['image'].encode('latin-1')).astype(np.float32)
-    
+
     #for testing purpose
     #pickle.dump(image, open("img_for_inference", "wb"))
 
-    found_something, detected_animals = infer(app.model, image, input_index, output_index, prediction_map)
+    found_something, detected_animals = infer(app.model, image)
 
     return jsonify({
         'found_something': found_something,
