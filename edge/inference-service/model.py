@@ -1,15 +1,9 @@
 import tensorflow as tf
 import logging
 import time
-<<<<<<< HEAD
 from tensorflow.python.keras.applications.inception_v3 import preprocess_input
-=======
 import pickle
->>>>>>> 8eb07686662a4e7323ff46062c685ae43636fe36
 
-class StupidModel(object):
-    def __call__(self, image):
-        return "racoon"
 
 with open('inference-service/prediction_map.pickle', 'rb') as f:
     prediction_map = pickle.load(f)
