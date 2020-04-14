@@ -11,7 +11,7 @@ import requests
 logging.getLogger().setLevel(logging.INFO)
 
 EDGE_MASTER_SERVICE = 'http://localhost:5000/process-image'
-DEBUG = False
+DEBUG = True
 SKIP = 5 #Number of frames to skip between 2 frames processed. 
 
 def distMap(frame1, frame2):
@@ -65,8 +65,10 @@ def main():
                 logging.info("Motion detected on " + str(cam_id));
                 try:
                     frame = cv2.resize(frame2, (299, 299))
+                    #frame = cv2.resize(frame2, (149, 149))
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                     frame = frame.reshape(1, 299, 299, 3)
+                    #frame = frame.reshape(1, 149, 149, 3)
                     resp = requests.post(EDGE_MASTER_SERVICE, json={
                         'cam_id': cam_id,
                         'image': pickle.dumps(frame, protocol=pickle.HIGHEST_PROTOCOL).decode('latin-1')
