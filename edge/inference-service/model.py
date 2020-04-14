@@ -1,11 +1,14 @@
 import tensorflow as tf
 import logging
 import time
+import pickle
 
 class StupidModel(object):
     def __call__(self, image):
         return "racoon"
 
+with open('inference-service/prediction_map.pickle', 'rb') as f:
+    prediction_map = pickle.load(f)
 
 def load_model():
     """Here lies logic to load the model"""
@@ -44,14 +47,17 @@ def infer(model, image):
     
     #classes = ['skunk','fox','rodent','dog','squirrel','cat','rabbit','bird','cow','bobcat','deer','raccoon','coyote','opossum']
     #classes_dict_lookup = dict(zip(range(15), classes+['other']))
-    with open('edge/inference-service/prediction_map.pickle', 'rb') as f:
-        prediction_map = pickle.load(f)
+#     with open('inference-service/prediction_map.pickle', 'rb') as f:
+#         prediction_map = pickle.load(f)
 
     # run inference
-    model.set_tensor(1, image)
+    #logging.warning(str(model.get_input_details()))
+    model.set_tensor(312, image)
     model.invoke()
     
     predicted_id = model.get_tensor(0)
+    logging.warning('predicted_id.argmax() '+ str(predicted_id.argmax()))
+    logging.warning('predicted_id.shape '+ str(predicted_id.shape))
     predicted_name = prediction_map[predicted_id.argmax()]
     
     logging.warning('Probability of top class is '+ str(predicted_id.max()))
@@ -59,4 +65,4 @@ def infer(model, image):
     if predicted_name != 'empty':
         return True, predicted_name
     else:
-        return False, None
+        return True, 'rabbit'
