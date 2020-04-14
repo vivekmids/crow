@@ -10,7 +10,7 @@ def load_model():
     """Here lies logic to load the model"""
     # load model from h5 file
 
-    model = tf.lite.Interpreter(model_path="model/converted_quant_model_original.tflite")
+    model = tf.lite.Interpreter(model_path="model/converted_quant_model_v1_top_layer.tflite")
     model.allocate_tensors()
 #    input_details = model.get_input_details()
 #    output_details = model.get_output_details()
@@ -38,8 +38,8 @@ def infer(model, image):
         - name of identified animals
     """
 
-    classes = ['skunk','fox','rodent','dog','squirrel','cat','rabbit','bird','cow','bobcat','deer','raccoon','coyote','opossum']
-    classes_dict_lookup = dict(zip(range(15), classes+['other']))
+    classes = ['rodent','squirrel','rabbit','bird','deer','raccoon','skunk','opossum']
+    classes_dict_lookup = dict(zip(range(10), classes + ['other'] + ['empty']))
 
     # run inference
     image = preprocess_input(image)

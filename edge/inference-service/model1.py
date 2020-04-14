@@ -14,7 +14,7 @@ def load_model():
     # load model from h5 file
     logging.warning('Starting load model')
     start = time.perf_counter()
-    model = tf.lite.Interpreter(model_path="model/converted_quant_model_v1_top_layer.tflite")
+    model = tf.lite.Interpreter(model_path="model/converted_quant_model_v2_original.tflite")
     model.allocate_tensors()
     end = time.perf_counter()
     logging.warning(f'Model loaded in {end-start} seconds')
