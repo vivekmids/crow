@@ -36,7 +36,7 @@ class DeterrentManager(object):
                 except Exception as e:
                     logging.error("Sound files for %s in folder %s not found", pest, predator)
                     raise e
-                    
+
         gpio.setmode(gpio.BOARD)
         gpio.setup(11, gpio.OUT)
 
