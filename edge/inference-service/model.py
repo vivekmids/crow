@@ -1,6 +1,7 @@
 import tensorflow as tf
 import logging
 import time
+from tensorflow.python.keras.applications.inception_v3 import preprocess_input
 
 class StupidModel(object):
     def __call__(self, image):
@@ -16,20 +17,16 @@ def load_model():
     model.allocate_tensors()
     end = time.perf_counter()
     logging.warning(f'Model loaded in {end-start} seconds')
-#    input_details = model.get_input_details()
-#    output_details = model.get_output_details()
-    
-    # Test model on random input data.
-#    input_shape = input_details[0]['shape']
-#    input_data = np.array(np.random.random_sample(input_shape), dtype=np.float32)
-#    model.set_tensor(input_details[0]['index'], input_data)
+    input_index = model.get_input_details()[0]['index']
+    output_index = model.get_output_details()[0]['index']
 
-#    model.invoke()
+    with open('edge/inference-service/prediction_map.pickle', 'rb') as f:
+        prediction_map = pickle.load(f)
 
-    return model
+    return model, input_index, output_index, prediction_map
 
 
-def infer(model, image):
+def infer(model, image, input_index, output_index, prediction_map):
     """Here is the code that to perform inference using the model.
     Expect this to be the model you return in `load_model()`
 
@@ -44,14 +41,13 @@ def infer(model, image):
     
     #classes = ['skunk','fox','rodent','dog','squirrel','cat','rabbit','bird','cow','bobcat','deer','raccoon','coyote','opossum']
     #classes_dict_lookup = dict(zip(range(15), classes+['other']))
-    with open('edge/inference-service/prediction_map.pickle', 'rb') as f:
-        prediction_map = pickle.load(f)
 
     # run inference
-    model.set_tensor(1, image)
+    image = preprocess_input(image)
+    model.set_tensor(input_index, image)
     model.invoke()
     
-    predicted_id = model.get_tensor(0)
+    predicted_id = model.get_tensor(output_index)
     predicted_name = prediction_map[predicted_id.argmax()]
     
     logging.warning('Probability of top class is '+ str(predicted_id.max()))
