@@ -48,7 +48,7 @@ export default ({ pestData, maxDate, supportedPests }) => {
         <tr>
           <th>Pest</th>
           <th>Count</th>
-          <th>Daily Trend</th>
+          <th>Day over Day change</th>
         </tr>
       </thead>
       <tbody>
