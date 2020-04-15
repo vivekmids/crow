@@ -66,7 +66,7 @@ const IndexPage = () => {
               <Link to="/how_it_works"><h1 className="title">Learn about the product →</h1></Link>
             </div>
             <div className="column">
-              <Link to="/members"><h1 className="title">Meet the team →</h1></Link>
+              <Link to="/team"><h1 className="title">Meet the team →</h1></Link>
             </div>
             <div className="column">
               <Link to="/garden_report"><h1 className="title">See our dashboard →</h1></Link>

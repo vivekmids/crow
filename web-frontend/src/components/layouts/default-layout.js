@@ -35,7 +35,7 @@ const Layout = ({ title, children }) => {
         <div className="content has-text-centered">
           <p>
             <Link to="/" activeClassName="is-activate">Home</Link>{` | `}
-            <Link activeClassName="is-active" to="/members/">Members</Link>{` | `}
+            <Link activeClassName="is-active" to="/team/">Team</Link>{` | `}
             <Link activeClassName="is-active" to="/how_it_works/">How It Works</Link>{` | `}
             <Link activeClassName="is-active" to="/garden_report/">Garden Report</Link>
           </p>

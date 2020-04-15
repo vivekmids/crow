@@ -38,8 +38,8 @@ const Header = ({ siteTitle }) => {
           <Link className="navbar-item" activeClassName="is-active" to="/">
             Home
           </Link>
-          <Link className="navbar-item" activeClassName="is-active" to="/members/">
-            Members
+          <Link className="navbar-item" activeClassName="is-active" to="/team/">
+            Team
           </Link>
           <Link className="navbar-item" activeClassName="is-active" to="/how_it_works/">
             How It Works

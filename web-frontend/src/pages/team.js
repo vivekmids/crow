@@ -52,7 +52,7 @@ const MemberCard = ({ name, role, linkedInUsername, githubUsername, children }) 
 
 const MembersPage = () => {
   return (
-    <Layout title="Members">
+    <Layout title="Team">
       <GrayFontAwesomeStyle />
       <section className="hero is-fullheight">
         <div className="hero-body">
